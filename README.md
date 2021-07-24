@@ -4,7 +4,7 @@ Audio Analysis Tools plugin for Unreal Engine. Supports Envelope Analysis and On
 Works in conjunction with the Runtime Audio Importer plugin.
 Plugin does not require any static libraries and external dependencies.
 
-![Audio Analysis Tools Unreal Engine Plugin Logo](image/audioanalysistools.png "AudioAnalysisTools Unreal Engine Plugin Logo")
+![Audio Analysis Tools Unreal Engine Plugin Logo](image/audioanalysistools.jpg "AudioAnalysisTools Unreal Engine Plugin Logo")
 
 ## Features
 - Envelope Analysis
