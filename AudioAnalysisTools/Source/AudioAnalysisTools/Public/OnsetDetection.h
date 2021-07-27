@@ -72,11 +72,11 @@ struct FDetectionStepUnitFeature
 	GENERATED_BODY()
 
 	/** Whether to use this feature of the Onset detection with a step unit or not */
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, Category = "Onset Detection")
 	bool bUseStepUnit;
 
 	/** Delay between each step, in seconds. If used, then the recommended value is about "0.25" */
-	UPROPERTY(BlueprintReadWrite, meta = (ClampMin = "0.0", ClampMax = "25.0", UIMin = "0.0", UIMax = "25.0"))
+	UPROPERTY(BlueprintReadWrite, meta = (ClampMin = "0.0", ClampMax = "25.0", UIMin = "0.0", UIMax = "25.0"), Category = "Onset Detection")
 	float WaitingTime;
 
 	/** Constructor disabling step unit feature */
