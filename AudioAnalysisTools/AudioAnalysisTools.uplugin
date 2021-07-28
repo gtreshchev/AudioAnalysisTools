@@ -35,6 +35,44 @@
 				"TVOS",
 				"Switch"
 			]
+		},
+		{
+			"Name": "EnvelopeAnalysis",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [
+				"Win64",
+				"Win32",
+				"Mac",
+				"Android",
+				"IOS",
+				"Linux"
+			],
+			"BlacklistPlatforms": [
+				"XboxOne",
+				"PS4",
+				"TVOS",
+				"Switch"
+			]
+		},
+		{
+			"Name": "OnsetDetection",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [
+				"Win64",
+				"Win32",
+				"Mac",
+				"Android",
+				"IOS",
+				"Linux"
+			],
+			"BlacklistPlatforms": [
+				"XboxOne",
+				"PS4",
+				"TVOS",
+				"Switch"
+			]
 		}
 	],
 	"Plugins": [

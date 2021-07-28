@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class AudioAnalysisTools : ModuleRules
+public class OnsetDetection : ModuleRules
 {
-	public AudioAnalysisTools(ReadOnlyTargetRules Target) : base(Target)
+	public OnsetDetection(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 
@@ -21,9 +21,7 @@ public class AudioAnalysisTools : ModuleRules
 			{
 				"CoreUObject",
 				"Engine",
-				"RuntimeAudioImporter",
-				"EnvelopeAnalysis",
-				"OnsetDetection"
+				"EnvelopeAnalysis"
 			}
 		);
 	}

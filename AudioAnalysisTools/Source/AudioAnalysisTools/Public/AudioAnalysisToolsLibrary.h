@@ -2,15 +2,15 @@
 
 #pragma once
 
-#include "EnvelopeAnalysis.h"
-#include "OnsetDetection.h"
+#include "EnvelopeAnalysisLibrary.h"
+#include "OnsetDetectionLibrary.h"
 #include "RuntimeAudioImporterLibrary.h"
 
 #include "AudioAnalysisToolsLibrary.generated.h"
 
 /** Possible main actions */
 UENUM(BlueprintType, Category = "Audio Analysis Tools")
-enum EMainAction
+enum class EMainAction : uint8
 {
 	NoMainAction UMETA(Hidden),
 	ImportAudioAndAnalyseEnvelopeAction,
@@ -19,7 +19,7 @@ enum EMainAction
 
 /** Possible detailed actions */
 UENUM(BlueprintType, Category = "Audio Analysis Tools")
-enum EDetailedAction
+enum class EDetailedAction : uint8
 {
 	NoDetailedAction UMETA(Hidden),
 	ImportAudio,
@@ -35,20 +35,20 @@ struct FProcessErrorInfo
 
 	/** Main action error information */
 	UPROPERTY(BlueprintReadWrite, Category = "Audio Analysis Tools")
-	TEnumAsByte<EMainAction> MainActionError;
+	EMainAction MainActionError;
 
 	/** Detailed action error information */
 	UPROPERTY(BlueprintReadWrite, Category = "Audio Analysis Tools")
-	TEnumAsByte<EDetailedAction> DetailedActionError;
+	EDetailedAction DetailedActionError;
 
 	/** Base constructor */
 	FProcessErrorInfo()
-		: MainActionError(NoMainAction), DetailedActionError(NoDetailedAction)
+		: MainActionError(EMainAction::NoMainAction), DetailedActionError(EDetailedAction::NoDetailedAction)
 	{
 	}
 
 	/** Main constructor */
-	FProcessErrorInfo(TEnumAsByte<EMainAction> InMainActionError, TEnumAsByte<EDetailedAction> InDetailedActionError)
+	FProcessErrorInfo(EMainAction InMainActionError, EDetailedAction InDetailedActionError)
 		: MainActionError(InMainActionError), DetailedActionError(InDetailedActionError)
 	{
 	}
@@ -83,17 +83,17 @@ struct FAudioImportingStruct
 	 * Fill in only if "ImportAudioFromPreImportedAsset" = false
 	 */
 	UPROPERTY(BlueprintReadWrite, Category = "Audio Analysis Tools")
-	TEnumAsByte<EAudioFormat> AudioFormat;
+	EAudioFormat AudioFormat;
 
 	/** Base constructor */
 	FAudioImportingStruct()
 		: ImportAudioFromPreImportedAsset(false), PreImportedSoundAssetRef(nullptr), FilePath(TEXT("")),
-		  AudioFormat(Auto)
+		  AudioFormat(EAudioFormat::Auto)
 	{
 	}
 
 	/** Constructor using FilePath */
-	FAudioImportingStruct(FString InFilePath, const TEnumAsByte<EAudioFormat>& InAudioFormat)
+	FAudioImportingStruct(FString InFilePath, const EAudioFormat& InAudioFormat)
 		: ImportAudioFromPreImportedAsset(false), PreImportedSoundAssetRef(nullptr), FilePath(InFilePath),
 		  AudioFormat(InAudioFormat)
 	{
@@ -102,7 +102,7 @@ struct FAudioImportingStruct
 	/** Constructor using Pre-imported sound asset */
 	FAudioImportingStruct(UPreImportedSoundAsset* InPreImportedSoundAssetRef)
 		: ImportAudioFromPreImportedAsset(true), PreImportedSoundAssetRef(InPreImportedSoundAssetRef),
-		  FilePath(TEXT("")), AudioFormat(Auto)
+		  FilePath(TEXT("")), AudioFormat(EAudioFormat::Auto)
 	{
 	}
 };
@@ -122,9 +122,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnOnsetDetectionFinished, const TAr
 
 /** Delegate broadcast when an error occurs */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnActionError, const FProcessErrorInfo, ErrorInfo,
-                                              const TEnumAsByte<ETranscodingStatus>, AudioImportingStatus,
-                                              const TEnumAsByte<EEnvelopeAnalysisStatus>, EnvelopeAnalysisStatus,
-                                              const TEnumAsByte<EOnsetDetectionStatus>, OnsetDetectionStatus);
+                                              const ETranscodingStatus&, AudioImportingStatus,
+                                              const EEnvelopeAnalysisStatus&, EnvelopeAnalysisStatus,
+                                              const EOnsetDetectionStatus&, OnsetDetectionStatus);
 
 /**
  * Audio Analysis Tools object
@@ -187,11 +187,11 @@ private:
 
 	/** Onset Detection object reference */
 	UPROPERTY()
-	UOnsetDetection* OnsetDetectionObject;
+	UOnsetDetectionLibrary* OnsetDetectionObject;
 
 	/** Envelope Analysis object reference */
 	UPROPERTY()
-	UEnvelopeAnalysis* EnvelopeAnalysisObject;
+	UEnvelopeAnalysisLibrary* EnvelopeAnalysisObject;
 
 	/** Imported sound wave object reference */
 	UPROPERTY()
@@ -258,7 +258,7 @@ private:
 	UFUNCTION()
 	void AudioImportingFinished(URuntimeAudioImporterLibrary* RuntimeAudioImporterObjectRef,
 	                            UImportedSoundWave* SoundWaveRef,
-	                            const TEnumAsByte<ETranscodingStatus>& Status);
+	                            const ETranscodingStatus& Status);
 
 	/**
 	 * Envelope Analysis Finished callback
@@ -268,7 +268,7 @@ private:
 	 */
 	UFUNCTION()
 	void EnvelopeAnalysisFinished(const FAnalysedEnvelopeData& AnalysedEnvelopeData,
-	                              const TEnumAsByte<EEnvelopeAnalysisStatus>& Status);
+	                              const EEnvelopeAnalysisStatus& Status);
 
 	/**
 	 * Onset Detection Finished callback
@@ -278,14 +278,14 @@ private:
 	 */
 	UFUNCTION()
 	void OnsetDetectionFinished(const TArray<float>& DetectedOnsetArray,
-	                            const TEnumAsByte<EOnsetDetectionStatus>& Status);
+	                            const EOnsetDetectionStatus& Status);
 
 	// Callbacks
 
 
 	// Internal initializations
 
-protected:
+private:
 	/** Initialize and import audio */
 	void InitializeAndImportAudio();
 
@@ -300,7 +300,7 @@ protected:
 
 	// Internal uninitializations
 
-protected:
+private:
 	/** Remove audio importer */
 	void UnitializeAudioImporter();
 
@@ -315,8 +315,8 @@ protected:
 
 	// Miscellaneous
 
-protected:
-	TEnumAsByte<EMainAction> CurrentMainAction;
+private:
+	EMainAction CurrentMainAction;
 
 	// Miscellaneous
 };

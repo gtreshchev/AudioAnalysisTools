@@ -13,7 +13,7 @@ UAudioAnalysisToolsLibrary::UAudioAnalysisToolsLibrary()
 	EnvelopeAnalysisObject = nullptr;
 	ImportedSoundWave = nullptr;
 
-	CurrentMainAction = NoMainAction;
+	CurrentMainAction = EMainAction::NoMainAction;
 }
 
 UAudioAnalysisToolsLibrary* UAudioAnalysisToolsLibrary::CreateAudioAnalysisTools()
@@ -26,7 +26,7 @@ UAudioAnalysisToolsLibrary* UAudioAnalysisToolsLibrary::CreateAudioAnalysisTools
 void UAudioAnalysisToolsLibrary::ImportAudioAndAnalyseEnvelope(FAudioImportingStruct InAudioImportingInfo,
                                                                FEnvelopeAnalysisStruct InEnvelopeAnalysisInfo)
 {
-	CurrentMainAction = ImportAudioAndAnalyseEnvelopeAction;
+	CurrentMainAction = EMainAction::ImportAudioAndAnalyseEnvelopeAction;
 
 	AudioImportingInfo = InAudioImportingInfo;
 	EnvelopeAnalysisInfo = InEnvelopeAnalysisInfo;
@@ -38,7 +38,7 @@ void UAudioAnalysisToolsLibrary::ImportAudioAndDetectOnset(FAudioImportingStruct
                                                            FEnvelopeAnalysisStruct InEnvelopeAnalysisInfo,
                                                            FOnsetDetectionStruct InOnsetDetectionInfo)
 {
-	CurrentMainAction = ImportAudioAndDetectOnsetActon;
+	CurrentMainAction = EMainAction::ImportAudioAndDetectOnsetActon;
 
 	AudioImportingInfo = InAudioImportingInfo;
 	EnvelopeAnalysisInfo = InEnvelopeAnalysisInfo;
@@ -51,11 +51,11 @@ void UAudioAnalysisToolsLibrary::AudioImportingProgress(int32 Percentage)
 {
 	if (OnActionProgress.IsBound())
 	{
-		if (CurrentMainAction == ImportAudioAndAnalyseEnvelopeAction)
+		if (CurrentMainAction == EMainAction::ImportAudioAndAnalyseEnvelopeAction)
 		{
 			Percentage -= static_cast<int32>((static_cast<float>(Percentage) * 20) / 100.0f);
 		}
-		else if (CurrentMainAction == ImportAudioAndDetectOnsetActon)
+		else if (CurrentMainAction == EMainAction::ImportAudioAndDetectOnsetActon)
 		{
 			Percentage -= static_cast<int32>((static_cast<float>(Percentage) * 35) / 100.0f);
 		}
@@ -65,77 +65,77 @@ void UAudioAnalysisToolsLibrary::AudioImportingProgress(int32 Percentage)
 
 void UAudioAnalysisToolsLibrary::AudioImportingFinished(URuntimeAudioImporterLibrary* RuntimeAudioImporterObjectRef,
                                                         UImportedSoundWave* SoundWaveRef,
-                                                        const TEnumAsByte<ETranscodingStatus>& Status)
+                                                        const ETranscodingStatus& Status)
 {
-	if (Status == SuccessfulImport)
+	if (Status == ETranscodingStatus::SuccessfulImport)
 	{
 		ImportedSoundWave = SoundWaveRef;
 
 		if (OnAudioImportingFinished.IsBound()) OnAudioImportingFinished.Broadcast(SoundWaveRef);
 
-		if (CurrentMainAction == ImportAudioAndAnalyseEnvelopeAction || CurrentMainAction ==
-			ImportAudioAndDetectOnsetActon)
+		if (CurrentMainAction == EMainAction::ImportAudioAndAnalyseEnvelopeAction || CurrentMainAction ==
+			EMainAction::ImportAudioAndDetectOnsetActon)
 			InitializeAndAnalyzeEnvelope();
 		else UnitializeAudioImporter();
 	}
 	else
 	{
 		if (OnActionError.IsBound())
-			OnActionError.Broadcast(FProcessErrorInfo(CurrentMainAction, ImportAudio), Status,
-			                        SuccessfulAnalysis,
-			                        SuccessfulDetection);
-		if (CurrentMainAction != ImportAudioAndAnalyseEnvelopeAction && CurrentMainAction !=
-			ImportAudioAndDetectOnsetActon)
+			OnActionError.Broadcast(FProcessErrorInfo(CurrentMainAction, EDetailedAction::ImportAudio), Status,
+			                        EEnvelopeAnalysisStatus::SuccessfulAnalysis,
+			                        EOnsetDetectionStatus::SuccessfulDetection);
+		if (CurrentMainAction != EMainAction::ImportAudioAndAnalyseEnvelopeAction && CurrentMainAction !=
+			EMainAction::ImportAudioAndDetectOnsetActon)
 			UnitializeAudioImporter();
 	}
 }
 
 void UAudioAnalysisToolsLibrary::EnvelopeAnalysisFinished(const FAnalysedEnvelopeData& AnalysedEnvelopeData,
-                                                          const TEnumAsByte<EEnvelopeAnalysisStatus>& Status)
+                                                          const EEnvelopeAnalysisStatus& Status)
 {
-	if (Status == SuccessfulAnalysis)
+	if (Status == EEnvelopeAnalysisStatus::SuccessfulAnalysis)
 	{
 		if (OnActionProgress.IsBound())
 		{
 			float Percentage = 0;
 
-			if (CurrentMainAction == ImportAudioAndAnalyseEnvelopeAction) Percentage = 100;
-			else if (CurrentMainAction == ImportAudioAndDetectOnsetActon) Percentage = 85;
+			if (CurrentMainAction == EMainAction::ImportAudioAndAnalyseEnvelopeAction) Percentage = 100;
+			else if (CurrentMainAction == EMainAction::ImportAudioAndDetectOnsetActon) Percentage = 85;
 
 			OnActionProgress.Broadcast(Percentage);
 		}
 
-		if (CurrentMainAction == ImportAudioAndAnalyseEnvelopeAction || CurrentMainAction ==
-			ImportAudioAndDetectOnsetActon)
+		if (CurrentMainAction == EMainAction::ImportAudioAndAnalyseEnvelopeAction || CurrentMainAction ==
+			EMainAction::ImportAudioAndDetectOnsetActon)
 			UnitializeAudioImporter();
 
 
 		if (OnEnvelopeAnalysisFinished.IsBound()) OnEnvelopeAnalysisFinished.Broadcast(AnalysedEnvelopeData);
 
 
-		if (CurrentMainAction == ImportAudioAndDetectOnsetActon) InitializeAndDetectOnset(AnalysedEnvelopeData);
+		if (CurrentMainAction == EMainAction::ImportAudioAndDetectOnsetActon) InitializeAndDetectOnset(AnalysedEnvelopeData);
 		else UnitializeEnvelopeAnalysis();
 	}
 	else
 	{
 		if (OnActionError.IsBound())
-			OnActionError.Broadcast(FProcessErrorInfo(CurrentMainAction, AnalyseEnvelope), SuccessfulImport, Status,
-			                        SuccessfulDetection);
+			OnActionError.Broadcast(FProcessErrorInfo(CurrentMainAction, EDetailedAction::AnalyseEnvelope), ETranscodingStatus::SuccessfulImport, Status,
+			                        EOnsetDetectionStatus::SuccessfulDetection);
 
-		if (CurrentMainAction == ImportAudioAndDetectOnsetActon || CurrentMainAction ==
-			ImportAudioAndAnalyseEnvelopeAction)
+		if (CurrentMainAction == EMainAction::ImportAudioAndDetectOnsetActon || CurrentMainAction ==
+			EMainAction::ImportAudioAndAnalyseEnvelopeAction)
 			ImportedSoundWave->ReleaseMemory();
 
-		if (CurrentMainAction != ImportAudioAndDetectOnsetActon) UnitializeAudioImporter();
+		if (CurrentMainAction != EMainAction::ImportAudioAndDetectOnsetActon) UnitializeAudioImporter();
 	}
 }
 
 void UAudioAnalysisToolsLibrary::OnsetDetectionFinished(const TArray<float>& DetectedOnsetArray,
-                                                        const TEnumAsByte<EOnsetDetectionStatus>& Status)
+                                                        const EOnsetDetectionStatus& Status)
 {
-	if (Status == SuccessfulDetection)
+	if (Status == EOnsetDetectionStatus::SuccessfulDetection)
 	{
-		if (CurrentMainAction == ImportAudioAndDetectOnsetActon)
+		if (CurrentMainAction == EMainAction::ImportAudioAndDetectOnsetActon)
 		{
 			if (OnActionProgress.IsBound()) OnActionProgress.Broadcast(100);
 
@@ -149,13 +149,13 @@ void UAudioAnalysisToolsLibrary::OnsetDetectionFinished(const TArray<float>& Det
 	}
 	else
 	{
-		if (CurrentMainAction == ImportAudioAndDetectOnsetActon)
+		if (CurrentMainAction == EMainAction::ImportAudioAndDetectOnsetActon)
 		{
 			if (ImportedSoundWave) ImportedSoundWave->ReleaseMemory();
 		}
 		if (OnActionError.IsBound())
-			OnActionError.Broadcast(FProcessErrorInfo(CurrentMainAction, DetectOnset), SuccessfulImport,
-			                        SuccessfulAnalysis, Status);
+			OnActionError.Broadcast(FProcessErrorInfo(CurrentMainAction, EDetailedAction::DetectOnset), ETranscodingStatus::SuccessfulImport,
+			                        EEnvelopeAnalysisStatus::SuccessfulAnalysis, Status);
 
 		UnitializeOnsetDetection();
 	}
@@ -198,7 +198,7 @@ void UAudioAnalysisToolsLibrary::InitializeAndImportAudio()
 
 void UAudioAnalysisToolsLibrary::InitializeAndAnalyzeEnvelope()
 {
-	UEnvelopeAnalysis* EnvelopeAnalysis = UEnvelopeAnalysis::CreateEnvelopeAnalysis();
+	UEnvelopeAnalysisLibrary* EnvelopeAnalysis = UEnvelopeAnalysisLibrary::CreateEnvelopeAnalysis();
 	EnvelopeAnalysisObject = EnvelopeAnalysis;
 
 	EnvelopeAnalysis->OnAnalysisFinished.AddDynamic(this, &UAudioAnalysisToolsLibrary::EnvelopeAnalysisFinished);
@@ -211,7 +211,7 @@ void UAudioAnalysisToolsLibrary::InitializeAndAnalyzeEnvelope()
 
 void UAudioAnalysisToolsLibrary::InitializeAndDetectOnset(const FAnalysedEnvelopeData& AnalysedEnvelopeData)
 {
-	UOnsetDetection* OnsetDetection = UOnsetDetection::CreateOnsetDetection();
+	UOnsetDetectionLibrary* OnsetDetection = UOnsetDetectionLibrary::CreateOnsetDetection();
 	OnsetDetectionObject = OnsetDetection;
 	OnsetDetection->OnDetectionFinished.AddDynamic(
 		this, &UAudioAnalysisToolsLibrary::OnsetDetectionFinished);
