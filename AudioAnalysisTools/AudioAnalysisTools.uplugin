@@ -8,7 +8,7 @@
 	"CreatedBy": "Georgy Treshchev",
 	"CreatedByURL": "https://github.com/gtreshchev/AudioAnalysisTools",
 	"DocsURL": "https://unreal.blog/audio-analysis-tools",
-	"MarketplaceURL": "https://www.unrealengine.com/marketplace/product/audio-analysis-tools",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/54f6567f89184beb9203f6211c791175",
 	"SupportURL": "https://telegram.me/gtreshchev",
 	"EngineVersion": "4.26.0",
 	"EnabledByDefault": true,
