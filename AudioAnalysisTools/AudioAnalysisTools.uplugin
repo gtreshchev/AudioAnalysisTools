@@ -10,7 +10,7 @@
 	"DocsURL": "https://unreal.blog/audio-analysis-tools",
 	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/54f6567f89184beb9203f6211c791175",
 	"SupportURL": "https://telegram.me/gtreshchev",
-	"EngineVersion": "4.26.0",
+	"EngineVersion": "4.27.0",
 	"EnabledByDefault": true,
 	"CanContainContent": false,
 	"IsBetaVersion": false,
