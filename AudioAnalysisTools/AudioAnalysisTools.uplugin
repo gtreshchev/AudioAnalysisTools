@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0",
+	"VersionName": "1.1",
 	"FriendlyName": "AudioAnalysisTools",
 	"Description": "Audio Analysis Tools plugin for Unreal Engine. Supports Envelope Analysis and Onset (Beat) detection. Works in conjunction with the Runtime Audio Importer plugin.",
 	"Category": "Audio",
