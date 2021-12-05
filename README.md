@@ -21,11 +21,6 @@
   </p>
 </p>
 
-# Audio Analysis Tools
-Audio Analysis Tools plugin for Unreal Engine. Supports Envelope Analysis and Onset (Beat) detection.
-Works in conjunction with the Runtime Audio Importer plugin.
-Plugin does not require any static libraries and external dependencies.
-
 ## Features
 - Envelope Analysis
 - Onset (Beat) Detection
