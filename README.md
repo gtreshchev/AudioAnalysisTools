@@ -29,6 +29,9 @@
 - No any static libraries and external dependencies
 - Support for all available devices (Android, iOS, Windows, Mac, Linux, etc)
 
+## Additional information
+FFT analysis is done through the [kissfft](https://github.com/mborgerding/kissfft) library.
+
 ## Legal info
 
 Unreal® is a trademark or registered trademark of Epic Games, Inc. in the United States of America and elsewhere.
