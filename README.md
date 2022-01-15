@@ -7,10 +7,10 @@
   <h3 align="center">Audio Analysis Tools</h3>
 
   <p align="center">
-    Analysis of audio data in a sound wave<br>Works in conjunction with the <a href="https://github.com/gtreshchev/runtimeaudioimporter">Runtime Audio Importer</a> plugin
+    Real-time audio data analysis<br>Works in conjunction with the <a href="https://github.com/gtreshchev/runtimeaudioimporter">Runtime Audio Importer</a> plugin
     <br/>
     <br/>
-    <a href="https://unreal.blog/audio-analysis-tools"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/gtreshchev/AudioAnalysisTools/wiki/"><strong>Explore the docs »</strong></a>
     <br/>
     <br/>
     <a href="https://unrealengine.com/marketplace/product/audio-analysis-tools">Marketplace</a>
@@ -23,7 +23,9 @@
 
 ## Features
 - Envelope Analysis
-- Onset (Beat) Detection
+- Onset Detection
+- Core Time Domain Features
+- Core Frequency Domain Features
 - No any static libraries and external dependencies
 - Support for all available devices (Android, iOS, Windows, Mac, Linux, etc)
 

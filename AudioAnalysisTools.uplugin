@@ -1,13 +1,13 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.1",
+	"VersionName": "1.0",
 	"FriendlyName": "AudioAnalysisTools",
-	"Description": "Audio Analysis Tools plugin for Unreal Engine. Supports Envelope Analysis and Onset (Beat) detection. Works in conjunction with the Runtime Audio Importer plugin.",
+	"Description": "Audio Analysis Tools plugin for Unreal Engine. Provides a variety of functions for analyzing audio data. Works in conjunction with the Runtime Audio Importer plugin.",
 	"Category": "Audio",
 	"CreatedBy": "Georgy Treshchev",
 	"CreatedByURL": "https://github.com/gtreshchev/AudioAnalysisTools",
-	"DocsURL": "https://unreal.blog/audio-analysis-tools",
+	"DocsURL": "https://github.com/gtreshchev/AudioAnalysisTools/wiki",
 	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/54f6567f89184beb9203f6211c791175",
 	"SupportURL": "https://telegram.me/gtreshchev",
 	"EngineVersion": "4.27.0",
@@ -19,44 +19,6 @@
 	"Modules": [
 		{
 			"Name": "AudioAnalysisTools",
-			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"WhitelistPlatforms": [
-				"Win64",
-				"Win32",
-				"Mac",
-				"Android",
-				"IOS",
-				"Linux"
-			],
-			"BlacklistPlatforms": [
-				"XboxOne",
-				"PS4",
-				"TVOS",
-				"Switch"
-			]
-		},
-		{
-			"Name": "EnvelopeAnalysis",
-			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"WhitelistPlatforms": [
-				"Win64",
-				"Win32",
-				"Mac",
-				"Android",
-				"IOS",
-				"Linux"
-			],
-			"BlacklistPlatforms": [
-				"XboxOne",
-				"PS4",
-				"TVOS",
-				"Switch"
-			]
-		},
-		{
-			"Name": "OnsetDetection",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [

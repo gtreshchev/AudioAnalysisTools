@@ -2,132 +2,21 @@
 
 #pragma once
 
-#include "EnvelopeAnalysisLibrary.h"
-#include "OnsetDetectionLibrary.h"
 #include "RuntimeAudioImporterLibrary.h"
+#include "WindowsLibrary.h"
+
+#define KISS_FFT_MALLOC FMemory::Malloc
+#define KISS_FFT_FREE FMemory::Free
+#include "ThirdParty/kiss_fft.h"
 
 #include "AudioAnalysisToolsLibrary.generated.h"
 
-/** Possible main actions */
-UENUM(BlueprintType, Category = "Audio Analysis Tools")
-enum class EMainAction : uint8
-{
-	NoMainAction UMETA(Hidden),
-	ImportAudioAndAnalyseEnvelopeAction,
-	ImportAudioAndDetectOnsetActon
-};
-
-/** Possible detailed actions */
-UENUM(BlueprintType, Category = "Audio Analysis Tools")
-enum class EDetailedAction : uint8
-{
-	NoDetailedAction UMETA(Hidden),
-	ImportAudio,
-	AnalyseEnvelope,
-	DetectOnset
-};
-
-/** Structure containing error information */
-USTRUCT(BlueprintType, Category = "Audio Analysis Tools")
-struct FProcessErrorInfo
-{
-	GENERATED_BODY()
-
-	/** Main action error information */
-	UPROPERTY(BlueprintReadWrite, Category = "Audio Analysis Tools")
-	EMainAction MainActionError;
-
-	/** Detailed action error information */
-	UPROPERTY(BlueprintReadWrite, Category = "Audio Analysis Tools")
-	EDetailedAction DetailedActionError;
-
-	/** Base constructor */
-	FProcessErrorInfo()
-		: MainActionError(EMainAction::NoMainAction), DetailedActionError(EDetailedAction::NoDetailedAction)
-	{
-	}
-
-	/** Main constructor */
-	FProcessErrorInfo(EMainAction InMainActionError, EDetailedAction InDetailedActionError)
-		: MainActionError(InMainActionError), DetailedActionError(InDetailedActionError)
-	{
-	}
-};
-
-/** Audio importing information */
-USTRUCT(BlueprintType, Category = "Audio Analysis Tools")
-struct FAudioImportingStruct
-{
-	GENERATED_BODY()
-
-	/** Whether to import audio via a pre-imported asset or file path */
-	UPROPERTY(BlueprintReadWrite, Category = "Audio Analysis Tools")
-	bool ImportAudioFromPreImportedAsset;
-
-	/**
-	 * Pre-imported sound asset reference
-	 * Fill in only if "ImportAudioFromPreImportedAsset" = true
-	 */
-	UPROPERTY(BlueprintReadWrite, Category = "Audio Analysis Tools")
-	UPreImportedSoundAsset* PreImportedSoundAssetRef;
-
-	/**
-	 * The path to the audio file
-	 * Fill in only if "ImportAudioFromPreImportedAsset" = false
-	 */
-	UPROPERTY(BlueprintReadWrite, Category = "Audio Analysis Tools")
-	FString FilePath;
-
-	/**
-	 * Audio format
-	 * Fill in only if "ImportAudioFromPreImportedAsset" = false
-	 */
-	UPROPERTY(BlueprintReadWrite, Category = "Audio Analysis Tools")
-	EAudioFormat AudioFormat;
-
-	/** Base constructor */
-	FAudioImportingStruct()
-		: ImportAudioFromPreImportedAsset(false), PreImportedSoundAssetRef(nullptr), FilePath(TEXT("")),
-		  AudioFormat(EAudioFormat::Auto)
-	{
-	}
-
-	/** Constructor using FilePath */
-	FAudioImportingStruct(FString InFilePath, const EAudioFormat& InAudioFormat)
-		: ImportAudioFromPreImportedAsset(false), PreImportedSoundAssetRef(nullptr), FilePath(InFilePath),
-		  AudioFormat(InAudioFormat)
-	{
-	}
-
-	/** Constructor using Pre-imported sound asset */
-	FAudioImportingStruct(UPreImportedSoundAsset* InPreImportedSoundAssetRef)
-		: ImportAudioFromPreImportedAsset(true), PreImportedSoundAssetRef(InPreImportedSoundAssetRef),
-		  FilePath(TEXT("")), AudioFormat(EAudioFormat::Auto)
-	{
-	}
-};
-
-/** Delegate broadcast to get the audio analysis progress */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionProgress, const int32, Percentage);
-
-/** Delegate broadcast when audio importing completes */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAudioImportingFinished, UImportedSoundWave*, ReadySoundWave);
-
-/** Delegate broadcast when envelope analysis completes */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnvelopeAnalysisFinished, const FAnalysedEnvelopeData&,
-                                            AnalysedEnvelopeData);
-
-/** Delegate broadcast when onset detection completes */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnOnsetDetectionFinished, const TArray<float>&, DetectedOnsetArray);
-
-/** Delegate broadcast when an error occurs */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnActionError, const FProcessErrorInfo, ErrorInfo,
-                                              const ETranscodingStatus&, AudioImportingStatus,
-                                              const EEnvelopeAnalysisStatus&, EnvelopeAnalysisStatus,
-                                              const EOnsetDetectionStatus&, OnsetDetectionStatus);
+class UEnvelopeAnalysis;
+class UOnsetDetection;
+class UPitchDetection;
 
 /**
- * Audio Analysis Tools object
+ * Audio Analysis Tools object. Main class simplifying the analysis of audio data.
  * Works in conjunction with the Runtime Audio Importer plugin.
  */
 UCLASS(BlueprintType, Category = "Audio Analysis Tools")
@@ -137,186 +26,267 @@ class AUDIOANALYSISTOOLS_API UAudioAnalysisToolsLibrary : public UObject
 
 	UAudioAnalysisToolsLibrary();
 
-	// Delegates
-
-public:
-	/** Bind to know when analysis is on progress */
-	UPROPERTY(BlueprintAssignable, Category = "Audio Analysis Tools")
-	FOnActionProgress OnActionProgress;
-
-	/** Bind to know when an error occurred */
-	UPROPERTY(BlueprintAssignable, Category = "Audio Analysis Tools")
-	FOnActionError OnActionError;
-
-	/** Bind to know when the audio import has been completed (Indicates that the Runtime Audio Importer has completed its work) */
-	UPROPERTY(BlueprintAssignable, Category = "Audio Analysis Tools")
-	FOnAudioImportingFinished OnAudioImportingFinished;
-
-	/** Bind to know when the envelope analysis has been completed (Indicates that the Envelope Analysis has completed its work) */
-	UPROPERTY(BlueprintAssignable, Category = "Audio Analysis Tools")
-	FOnEnvelopeAnalysisFinished OnEnvelopeAnalysisFinished;
-
-	/** Bind to know when the onset (beat) detection has been completed (Indicates that the Onset Detection has completed its work) */
-	UPROPERTY(BlueprintAssignable, Category = "Audio Analysis Tools")
-	FOnOnsetDetectionFinished OnOnsetDetectionFinished;
-
-	// Delegates
-
-
-	// Temporary parameters
-
-private:
-	/** Temporary information about importing audio */
-	FAudioImportingStruct AudioImportingInfo;
-
-	/** Temporary information about envelope analysis */
-	FEnvelopeAnalysisStruct EnvelopeAnalysisInfo;
-
-	/** Temporary information about onset detection */
-	FOnsetDetectionStruct OnsetDetectionInfo;
-
-	// Temporary parameters
-
-
-	// References
-
-private:
-	/** Runtime Audio Importer object reference */
-	UPROPERTY()
-	URuntimeAudioImporterLibrary* AudioImporterObject;
-
-	/** Onset Detection object reference */
-	UPROPERTY()
-	UOnsetDetectionLibrary* OnsetDetectionObject;
-
-	/** Envelope Analysis object reference */
-	UPROPERTY()
-	UEnvelopeAnalysisLibrary* EnvelopeAnalysisObject;
-
-	/** Imported sound wave object reference */
-	UPROPERTY()
-	UImportedSoundWave* ImportedSoundWave;
-
-	// References
-
-
-	// Main
+	/**
+	 * Begin Destroy override method
+	 */
+	virtual void BeginDestroy() override;
 
 public:
 	/**
-	 * Instantiates an AudioAnalysisTools object
-	 *
-	 * @return The AudioAnalysisTools object. Bind to it's delegates depending on what operation you will be performing
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools")
-	static UAudioAnalysisToolsLibrary* CreateAudioAnalysisTools();
-
-	/**
-	 * Import audio and then analyze the Envelope data
-	 * @param InAudioImportingInfo Audio import information
-	 * @param InEnvelopeAnalysisInfo Envelope analysis information
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools")
-	void ImportAudioAndAnalyseEnvelope(FAudioImportingStruct InAudioImportingInfo,
-	                                   FEnvelopeAnalysisStruct InEnvelopeAnalysisInfo);
-
-	/**
-	 * Import audio, analyze the Envelope data, then detect Onset
-	 *
-	 * @param InAudioImportingInfo Audio import information
-	 * @param InEnvelopeAnalysisInfo Envelope analysis information
-	 * @param InOnsetDetectionInfo Onset detection information
+	 * Instantiates an Audio Analysis object
 	 * 
-	 * @note You should not fill InOnsetDetectionInfo.EnvelopeData Array, as it will be parsed through Envelope Analysis automatically
+	 * @param FrameSize The frame size of internal buffers. The smaller the buffer size, the greater the performance, but less accuracy
+	 * @param SampleRate The input audio sample rate. Leave the field blank if you will use "ProcessAudioFrameFromSoundWave"
+	 * @param WindowType The type of window function to use
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools")
-	void ImportAudioAndDetectOnset(FAudioImportingStruct InAudioImportingInfo,
-	                               FEnvelopeAnalysisStruct InEnvelopeAnalysisInfo,
-	                               FOnsetDetectionStruct InOnsetDetectionInfo);
+	static UAudioAnalysisToolsLibrary* CreateAudioAnalysisTools(int32 FrameSize = 512, int32 SampleRate = 0, EAnalysisWindowType WindowType = EAnalysisWindowType::HanningWindow);
 
-	// Main
+	/**
+	 * Process an audio frame from the sound wave
+	 * 
+	 * @param ImportedSoundWave Sound wave from RuntimeAudioImporter where to get audio data from
+	 * @param TimeLength The length of the sound for which to take the audio data, sec
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools")
+	bool ProcessAudioFrameFromSoundWave(UImportedSoundWave* ImportedSoundWave, float TimeLength = 0.5f);
+
+	/**
+	 * Process an audio frame from the sound wave
+	 * 
+	 * @param ImportedSoundWave Sound wave from RuntimeAudioImporter where to get audio data from
+	 * @param StartTime Start time for analysis
+	 * @param EndTime End time for analysis
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools")
+	bool ProcessAudioFrameFromSoundWave_Custom(UImportedSoundWave* ImportedSoundWave, float StartTime, float EndTime);
 
 
-	// Callbacks
+	/**
+	 * Update the Sample Rate used for the analysis
+	 *
+	 * @param SampleRate The sampling frequency
+	 * @note You do not need to call it manually if you use "ProcessAudioFrameFromSoundWave"
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools")
+	void UpdateSampleRate(int32 SampleRate);
+
+	/**
+	 * Update the frame size. The smaller the buffer size, the greater the performance, but less accuracy.
+	 *
+	 * @param FrameSize The frame size of internal buffers
+	 * @note You do not need to call it manually if you use "ProcessAudioFrameFromSoundWave"
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools")
+	void UpdateFrameSize(int32 FrameSize);
 
 private:
 	/**
-	 * Audio Importing Progress callback
-	 *
-	 * @param Percentage Percentage of importing completed (0-100%)
+	 * Initialize Audio Analysis
+	 * 
+	 * @param FrameSize The frame size of internal buffers. The smaller the buffer size, the greater the performance, but less accuracy
+	 * @param SampleRate The input audio sample rate. Leave the field blank if you will use "ProcessAudioFrameFromSoundWave"
+	 * @param WindowType The type of window function to use
 	 */
-	UFUNCTION()
-	void AudioImportingProgress(int32 Percentage);
+	void Initialize(int32 FrameSize, int32 SampleRate, EAnalysisWindowType WindowType = EAnalysisWindowType::HanningWindow);
+
+public:
+	/**
+	 * Get the audio frame from the sound wave. AudioFrame shrinks to fit FrameSize
+	 *
+	 * @param ImportedSoundWave Sound wave from RuntimeAudioImporter where to get audio data from
+	 * @param StartTime Start time for analysis
+	 * @param EndTime End time for analysis
+	 * @param AudioFrame Analyzed audio frame
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools")
+	bool GetAudioFrameFromSoundWave(UImportedSoundWave* ImportedSoundWave, float StartTime, float EndTime, TArray<float>& AudioFrame);
 
 	/**
-	 * Audio Importing Finished callback
-	 *
-	 * @param RuntimeAudioImporterObjectRef Runtime Audio Importer object reference
-	 * @param SoundWaveRef Imported sound wave object reference
-	 * @param Status TranscodingStatus Enum in case an error occurs
+	 * Process an audio frame
+	 * 
+	 * @param AudioFrame An array containing audio frame in 32-bit float PCM format
 	 */
-	UFUNCTION()
-	void AudioImportingFinished(URuntimeAudioImporterLibrary* RuntimeAudioImporterObjectRef,
-	                            UImportedSoundWave* SoundWaveRef,
-	                            const ETranscodingStatus& Status);
+	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools")
+	void ProcessAudioFrame(TArray<float> AudioFrame);
+
+public:
+	/**
+	 * Gist automatically calculates the magnitude spectrum when processAudioFrame() is called, this function returns it.
+	 *
+	 * @return The current magnitude spectrum
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools")
+	const TArray<float>& GetMagnitudeSpectrum();
+
+public:
+	/**
+	 * Calculate envelope data
+	 *
+	 * @param AnalyzedData Analysed Envelope Data
+	 * @return Whether the analysis was successful or not
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Envelope Analysis")
+	bool GetEnvelopeValues(TArray<float>& AnalyzedData);
+
+public:
+	/**
+	 * Calculate the Root Mean Square (RMS) of an audio buffer in vector format
+	 *
+	 * @return The root mean square (RMS) of the currently stored audio frame
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Core Time Domain Features")
+	float GetRootMeanSquare();
 
 	/**
-	 * Envelope Analysis Finished callback
+	 * Calculate the peak energy (max absolute value) in a time domain audio signal buffer in vector format
 	 *
-	 * @param AnalysedEnvelopeData
-	 * @param Status EnvelopeAnalysis Enum in case an error occurs
+	 * @return the peak energy of the currently stored audio frame
 	 */
-	UFUNCTION()
-	void EnvelopeAnalysisFinished(const FAnalysedEnvelopeData& AnalysedEnvelopeData,
-	                              const EEnvelopeAnalysisStatus& Status);
+	UFUNCTION(BlueprintCallable, Category = "Core Time Domain Features")
+	float GetPeakEnergy();
 
 	/**
-	 * Onset Detection Finished callback
+	 * Calculate the zero crossing rate of a time domain audio signal buffer
 	 *
-	 * @param DetectedOnsetArray Detected onset data
-	 * @param Status OnsetDetection Enum in case an error occurs
+	 * @return The zero crossing rate of the currently stored audio frame
 	 */
-	UFUNCTION()
-	void OnsetDetectionFinished(const TArray<float>& DetectedOnsetArray,
-	                            const EOnsetDetectionStatus& Status);
+	UFUNCTION(BlueprintCallable, Category = "Core Time Domain Features")
+	float GetZeroCrossingRate();
 
-	// Callbacks
+public:
+	/**
+	 * Calculate the spectral centroid given the first half of the magnitude spectrum of an audio signal
+	 *
+	 * @return The spectral centroid from the magnitude spectrum
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Core Frequency Domain Features")
+	float GetSpectralCentroid();
 
+	/**
+	 * Calculate the spectral flatness given the first half of the magnitude spectrum of an audio signal
+	 *
+	 * @return The spectral flatness of the magnitude spectrum
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Core Frequency Domain Features")
+	float GetSpectralFlatness();
 
-	// Internal initializations
+	/**
+	 * Calculate the spectral crest given the first half of the magnitude spectrum of an audio signal
+	 *
+	 * @return The spectral crest
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Core Frequency Domain Features")
+	float GetSpectralCrest();
+
+	/**
+	 * Calculate the spectral rolloff given the first half of the magnitude spectrum of an audio signal
+	 *
+	 * @return The spectral rolloff of the magnitude spectrum
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Core Frequency Domain Features")
+	float GetSpectralRolloff();
+
+	/**
+	 * Calculate the spectral kurtosis given the first half of the magnitude spectrum of an audio signal
+	 *
+	 * @return The spectral kurtosis of the magnitude spectrum
+	 * @note https://en.wikipedia.org/wiki/Kurtosis#Sample_kurtosis
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Core Frequency Domain Features")
+	float GetSpectralKurtosis();
+
+public:
+	/**
+	 * Calculate the energy difference between the current and previous energy sum
+	 *
+	 * @return The energy difference onset detection function sample for the magnitude spectrum frame
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Onset Detection")
+	float GetEnergyDifference();
+
+	/**
+	 * Calculate the spectral difference between the current and the previous magnitude spectrum
+	 *
+	 * @return The spectral difference onset detection function sample for the magnitude spectrum frame
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Onset Detection")
+	float GetSpectralDifference();
+
+	/**
+	 * Calculate the half wave rectified spectral difference between the current and the previous magnitude spectrum
+	 *
+	 * @return The half wave rectified complex spectral difference onset detection function sample for the magnitude spectrum frame
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Onset Detection")
+	float GetSpectralDifferenceHWR();
+
+	/**
+	 * Calculate the complex spectral difference from the real and imaginary parts of the FFT
+	 *
+	 * @return the complex spectral difference onset detection function sample for the magnitude spectrum frame
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Onset Detection")
+	float GetComplexSpectralDifference();
+
+	/**
+	 * Calculate the high frequency content onset detection function
+	 *
+	 * @return The high frequency content onset detection function sample for the magnitude spectrum frame
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Onset Detection")
+	float GetHighFrequencyContent();
 
 private:
-	/** Initialize and import audio */
-	void InitializeAndImportAudio();
+	/** Configure the FFT implementation given the audio frame size) */
+	void ConfigureFFT();
 
-	/** Initialize and analyze envelope */
-	void InitializeAndAnalyzeEnvelope();
+	/** Whether the FFT is configured or not */
+	bool FFTConfigured;
 
-	/** Initialize and detect onset */
-	void InitializeAndDetectOnset(const FAnalysedEnvelopeData& AnalysedEnvelopeData);
+	/** Free all FFT-related data */
+	void FreeFFT();
 
-	// Internal initializations
+	/** Perform the FFT on the current audio frame */
+	void PerformFFT();
 
+	/** Kiss FFT configuration */
+	kiss_fft_cfg FFT_Configuration;
 
-	// Internal uninitializations
+	/** FFT input samples, in complex for */
+	kiss_fft_cpx* FFT_InSamples;
 
-private:
-	/** Remove audio importer */
-	void UnitializeAudioImporter();
+	/** FFT output samples, in complex form */
+	kiss_fft_cpx* FFT_OutSamples;
 
-	/** Remove envelope analysis */
-	void UnitializeEnvelopeAnalysis();
+	/** The real part of the FFT for the current audio frame */
+	TArray<float> FFTReal;
 
-	/** Remove onset detection */
-	void UnitializeOnsetDetection();
-
-	// Internal uninitializations
-
-
-	// Miscellaneous
+	/** The imaginary part of the FFT for the current audio frame */
+	TArray<float> FFTImaginary;
 
 private:
-	EMainAction CurrentMainAction;
+	/** The sampling frequency used for analysis */
+	int32 SampleRate;
 
-	// Miscellaneous
+	/** The window type used in FFT analysis */
+	EAnalysisWindowType WindowType;
+
+	/** Current audio frame */
+	TArray<float> AudioFrame;
+
+	/** The window function used in FFT processing */
+	TArray<float> WindowFunction;
+
+	/** The magnitude spectrum of the current audio frame */
+	TArray<float> MagnitudeSpectrum;
+
+public:
+	/** Reference to the Envelope Analysis */
+	UPROPERTY(BlueprintReadOnly, Category = "Audio Analysis Tools")
+	UEnvelopeAnalysis* EnvelopeAnalysisRef;
+
+	/** Reference to the Onset Detection */
+	UPROPERTY(BlueprintReadOnly, Category = "Audio Analysis Tools")
+	UOnsetDetection* OnsetDetectionRef;
 };
