@@ -137,7 +137,7 @@ public:
 	 *
 	 * @return The current FFT Real
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Analyzers|Advanced")
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get FFT Real"), Category = "Audio Analysis Tools|Analyzers|Advanced")
 	const TArray<float>& GetFFTReal() const;
 
 	/**
@@ -145,7 +145,7 @@ public:
 	 *
 	 * @return The current FFT Imaginary
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Analyzers|Advanced")
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get FFT Imaginary"), Category = "Audio Analysis Tools|Analyzers|Advanced")
 	const TArray<float>& GetFFTImaginary() const;
 
 public:
