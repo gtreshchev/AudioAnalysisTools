@@ -22,11 +22,10 @@
 </p>
 
 ## Features
-- Envelope Analysis
+- Beat Detection
 - Onset Detection
 - Core Time Domain Features
 - Core Frequency Domain Features
-- Beat Detection (Work In Progress)
 - No any static libraries and external dependencies
 - Support for all available devices (Android, iOS, Windows, Mac, Linux, etc)
 
