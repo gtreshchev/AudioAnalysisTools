@@ -11,11 +11,12 @@ public class AudioAnalysisTools : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core",
 				"CoreUObject",
 				"Engine",
-				"RuntimeAudioImporter"
+				"Core"
 			}
 		);
+
+		PrivateDependencyModuleNames.Add("RuntimeAudioImporter");
 	}
 }

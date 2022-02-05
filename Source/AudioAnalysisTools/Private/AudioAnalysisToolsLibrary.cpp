@@ -1,13 +1,14 @@
 // Georgy Treshchev 2022.
 
 #include "AudioAnalysisToolsLibrary.h"
+#include "AudioAnalysisToolsDefines.h"
 
 #include "Analyzers/CoreFrequencyDomainFeatures.h"
 #include "Analyzers/CoreTimeDomainFeatures.h"
-#include "Analyzers/EnvelopeAnalysis.h"
+#include "Analyzers/BeatDetection.h"
 #include "Analyzers/OnsetDetection.h"
 
-#include "ThirdParty/kiss_fft.c"
+#include "ThirdParty/kissfft/kiss_fft.c"
 
 UAudioAnalysisToolsLibrary::UAudioAnalysisToolsLibrary()
 	: FFTConfigured(false)
@@ -16,81 +17,93 @@ UAudioAnalysisToolsLibrary::UAudioAnalysisToolsLibrary()
 
 void UAudioAnalysisToolsLibrary::BeginDestroy()
 {
-	UObject::BeginDestroy();
-
 	if (FFTConfigured)
 	{
 		FreeFFT();
 	}
+
+	Super::BeginDestroy();
 }
 
-UAudioAnalysisToolsLibrary* UAudioAnalysisToolsLibrary::CreateAudioAnalysisTools(int32 FrameSize, int32 SampleRate, EAnalysisWindowType WindowType)
+UAudioAnalysisToolsLibrary* UAudioAnalysisToolsLibrary::CreateAudioAnalysisTools(int32 FrameSize, EAnalysisWindowType WindowType)
 {
 	UAudioAnalysisToolsLibrary* AudioAnalysisTools = NewObject<UAudioAnalysisToolsLibrary>();
 
-	AudioAnalysisTools->Initialize(FrameSize, SampleRate, WindowType);
+	AudioAnalysisTools->Initialize(FrameSize, WindowType);
 
 	return AudioAnalysisTools;
 }
 
-bool UAudioAnalysisToolsLibrary::ProcessAudioFrameFromSoundWave(UImportedSoundWave* ImportedSoundWave, float TimeLength)
+bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWave(UImportedSoundWave* ImportedSoundWave, TArray<float>& AudioFrame)
 {
-	TArray<float> AudioFrameBuffer;
+	return GetAudioFrameFromSoundWaveByFrames(ImportedSoundWave, CurrentAudioFrame.Num(), AudioFrame);
+}
 
-	const float SoundWavePlaybackTime{ImportedSoundWave->GetPlaybackTime()};
+bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByFrames(UImportedSoundWave* ImportedSoundWave, int32 FrameSize, TArray<float>& AudioFrame)
+{
+	const int32 StartFrame{ImportedSoundWave != nullptr ? ImportedSoundWave->CurrentNumOfFrames : 0};
+	const int32 EndFrame{StartFrame + FrameSize};
 
-	if (!GetAudioFrameFromSoundWave(ImportedSoundWave, SoundWavePlaybackTime, SoundWavePlaybackTime + TimeLength, AudioFrameBuffer))
+	return GetAudioFrameFromSoundWaveByFramesCustom(ImportedSoundWave, StartFrame, EndFrame, AudioFrame);
+}
+
+bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByFramesCustom(UImportedSoundWave* ImportedSoundWave, int32 StartFrame, int32 EndFrame, TArray<float>& AudioFrame)
+{
+	if (!(StartFrame > 0 && StartFrame < EndFrame))
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("An audio frame from the sound wave '%s' was not processed!"), ImportedSoundWave != nullptr ? *ImportedSoundWave->GetName() : *FName().ToString());
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: start frame is '%f', expected > '0.0' and < '%f'"), StartFrame, EndFrame);
 		return false;
 	}
 
-	if (SampleRate != ImportedSoundWave->SamplingRate)
+	if (!(EndFrame > 0 && EndFrame > StartFrame))
 	{
-		UpdateSampleRate(ImportedSoundWave->SamplingRate);
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: end frame is '%f', expected > '0.0' and < '%f'"), EndFrame, StartFrame);
+		return false;
 	}
 
-	ProcessAudioFrame(AudioFrameBuffer);
+	if (EndFrame > ImportedSoundWave->PCMBufferInfo.PCMNumOfFrames)
+	{
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the PCM Data: end frame ('%d') must be less than total number of frames ('%d')"), EndFrame, ImportedSoundWave->PCMBufferInfo.PCMNumOfFrames);
+		return false;
+	}
+
+	const int32 NumChannels{ImportedSoundWave->NumChannels};
+
+	uint8* RetrievedPCMData = ImportedSoundWave->PCMBufferInfo.PCMData + (StartFrame * NumChannels * sizeof(float));
+	const int32 RetrievedPCMDataSize = EndFrame - StartFrame;
+
+	if (RetrievedPCMData == nullptr)
+	{
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the PCM Data: retrieved PCM Data is nullptr"), EndFrame, StartFrame);
+		return false;
+	}
+
+	if (RetrievedPCMDataSize <= 0)
+	{
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the PCM Data: retrieved PCM Data size is '%d', must be > 0 (%d - %d)"), RetrievedPCMDataSize, EndFrame, StartFrame);
+		return false;
+	}
+
+	if (RetrievedPCMDataSize > ImportedSoundWave->PCMBufferInfo.PCMDataSize)
+	{
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the PCM Data: retrieved PCM Data size (%d) must be less than the total size (%d)"), RetrievedPCMDataSize, static_cast<int32>(ImportedSoundWave->PCMBufferInfo.PCMDataSize));
+		return false;
+	}
+
+	AudioFrame = TArray<float>(reinterpret_cast<float*>(RetrievedPCMData), RetrievedPCMDataSize);
 
 	return true;
 }
 
-bool UAudioAnalysisToolsLibrary::ProcessAudioFrameFromSoundWave_Custom(UImportedSoundWave* ImportedSoundWave, float StartTime, float EndTime)
+bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByTime(UImportedSoundWave* ImportedSoundWave, float TimeLength, TArray<float>& AudioFrame)
 {
-	TArray<float> AudioFrameBuffer;
+	const float StartTime{ImportedSoundWave != nullptr ? ImportedSoundWave->GetPlaybackTime() : 0.f};
+	const float EndTime{StartTime + TimeLength};
 
-	if (!GetAudioFrameFromSoundWave(ImportedSoundWave, StartTime, EndTime, AudioFrameBuffer))
-	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("An audio frame from the sound wave '%s' was not processed!"), ImportedSoundWave != nullptr ? *ImportedSoundWave->GetName() : *FName().ToString());
-		return false;
-	}
-
-	if (SampleRate != ImportedSoundWave->SamplingRate)
-	{
-		UpdateSampleRate(ImportedSoundWave->SamplingRate);
-	}
-
-	ProcessAudioFrame(AudioFrameBuffer);
-
-	return true;
+	return GetAudioFrameFromSoundWaveByTimeCustom(ImportedSoundWave, StartTime, EndTime, AudioFrame);
 }
 
-void UAudioAnalysisToolsLibrary::UpdateSampleRate(int32 InSampleRate)
-{
-	EnvelopeAnalysisRef->UpdateSampleRate(InSampleRate);
-}
-
-void UAudioAnalysisToolsLibrary::Initialize(int32 FrameSize, int32 InSampleRate, EAnalysisWindowType InWindowType)
-{
-	EnvelopeAnalysisRef = UEnvelopeAnalysis::CreateEnvelopeAnalysis(1, InSampleRate, FrameSize);
-	OnsetDetectionRef = UOnsetDetection::CreateOnsetDetection(FrameSize);
-
-	WindowType = InWindowType;
-
-	UpdateFrameSize(FrameSize);
-}
-
-bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWave(UImportedSoundWave* ImportedSoundWave, float StartTime, float EndTime, TArray<float>& InAudioFrame)
+bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByTimeCustom(UImportedSoundWave* ImportedSoundWave, float StartTime, float EndTime, TArray<float>& AudioFrame)
 {
 	if (ImportedSoundWave == nullptr)
 	{
@@ -116,13 +129,13 @@ bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWave(UImportedSoundWave* 
 		return false;
 	}
 
-	if (!(StartTime > 0 || StartTime < EndTime))
+	if (!(StartTime > 0 && StartTime < EndTime))
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: start time is '%f', expected > '0.0' and < '%s'"), StartTime, EndTime);
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: start time is '%f', expected > '0.0' and < '%f'"), StartTime, EndTime);
 		return false;
 	}
 
-	if (!(EndTime > 0 || EndTime > StartTime))
+	if (!(EndTime > 0 && EndTime > StartTime))
 	{
 		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: end time is '%f', expected > '0.0' and < '%f'"), EndTime, StartTime);
 		return false;
@@ -138,100 +151,115 @@ bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWave(UImportedSoundWave* 
 
 	const int32 SamplingRate{ImportedSoundWave->SamplingRate};
 
-	const int32 NumOfChannels{ImportedSoundWave->NumChannels};
+	const int32 StartFrame{static_cast<int32>(StartTime * SamplingRate)};
+	const int32 EndFrame{static_cast<int32>(EndTime * SamplingRate)};
 
-	const int32 StartSample{static_cast<int32>(StartTime * SamplingRate)};
-	const int32 EndSample{static_cast<int32>(EndTime * SamplingRate)};
-
-	if (EndSample > ImportedSoundWave->PCMBufferInfo.PCMNumOfFrames)
-	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the PCM Data: end sample (%d) must be less than total number of frames (%d)"), EndSample, ImportedSoundWave->PCMBufferInfo.PCMNumOfFrames);
-		return false;
-	}
-
-	uint8* RetrievedPCMData = ImportedSoundWave->PCMBufferInfo.PCMData + (StartSample * ImportedSoundWave->NumChannels * sizeof(float));
-	const int32 RetrievedPCMDataSize = ((EndSample * sizeof(float)) - (StartSample * sizeof(float))) * NumOfChannels;
-
-	if (RetrievedPCMData == nullptr)
-	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the PCM Data: retrieved PCM Data is nullptr"));
-		return false;
-	}
-
-	if (RetrievedPCMDataSize <= 0)
-	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the PCM Data: retrieved PCM Data size is '%d', must be more > 0"), RetrievedPCMDataSize);
-		return false;
-	}
-
-	if (RetrievedPCMDataSize > static_cast<int32>(ImportedSoundWave->PCMBufferInfo.PCMDataSize))
-	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the PCM Data: retrieved PCM Data size (%d) must be less than the total size (%d)"), RetrievedPCMDataSize, static_cast<int32>(ImportedSoundWave->PCMBufferInfo.PCMDataSize));
-		return false;
-	}
-
-	if (!EnvelopeAnalysisRef->GetEnvelopeValues(TArray<float>(reinterpret_cast<float*>(RetrievedPCMData), RetrievedPCMDataSize), InAudioFrame))
-	{
-		return false;
-	}
-
-	return true;
+	return GetAudioFrameFromSoundWaveByFramesCustom(ImportedSoundWave, StartFrame, EndFrame, AudioFrame);
 }
 
-void UAudioAnalysisToolsLibrary::ProcessAudioFrame(TArray<float> InAudioFrame)
+void UAudioAnalysisToolsLibrary::Initialize(int32 FrameSize, EAnalysisWindowType InWindowType)
 {
-	if (InAudioFrame.Num() != AudioFrame.Num())
+	BeatDetectionRef = UBeatDetection::CreateBeatDetection();
+	OnsetDetectionRef = UOnsetDetection::CreateOnsetDetection(FrameSize);
+
+	WindowType = InWindowType;
+
+	UpdateFrameSize(FrameSize);
+}
+
+const TArray<float>& UAudioAnalysisToolsLibrary::GetMagnitudeSpectrum() const
+{
+	return MagnitudeSpectrum;
+}
+
+const TArray<float>& UAudioAnalysisToolsLibrary::GetFFTReal() const
+{
+	return FFTReal;
+}
+
+const TArray<float>& UAudioAnalysisToolsLibrary::GetFFTImaginary() const
+{
+	return FFTImaginary;
+}
+
+void UAudioAnalysisToolsLibrary::ProcessAudioFrame(const TArray<float>& AudioFrame, bool bProcessToBeatDetection)
+{
+	if (AudioFrame.Num() != CurrentAudioFrame.Num())
 	{
-		UpdateFrameSize(InAudioFrame.Num());
+		UpdateFrameSize(AudioFrame.Num());
 	}
 
-	AudioFrame = MoveTemp(InAudioFrame);
+	CurrentAudioFrame = AudioFrame;
 
-	AsyncTask(ENamedThreads::AnyThread, [this]()
+	AsyncTask(ENamedThreads::AnyThread, [this, bProcessToBeatDetection]()
 	{
 		PerformFFT();
+
+		if (bProcessToBeatDetection)
+		{
+			BeatDetectionRef->ProcessMagnitude(MagnitudeSpectrum);
+		}
 	});
 }
 
 void UAudioAnalysisToolsLibrary::UpdateFrameSize(int32 FrameSize)
 {
-	AudioFrame.SetNum(FrameSize);
+	const int32 MagnitudeSpectrumSize{FrameSize / 2};
+
+	CurrentAudioFrame.SetNum(FrameSize);
 
 	WindowFunction = UWindowsLibrary::CreateWindow(FrameSize, WindowType);
 
 	FFTReal.SetNum(FrameSize);
 	FFTImaginary.SetNum(FrameSize);
-	MagnitudeSpectrum.SetNum(FrameSize / 2);
-	
+	MagnitudeSpectrum.SetNum(MagnitudeSpectrumSize);
+
 	ConfigureFFT();
-
-	OnsetDetectionRef->UpdateFrameSize(FrameSize);
-	EnvelopeAnalysisRef->UpdateFrameSize(FrameSize);
 }
 
-const TArray<float>& UAudioAnalysisToolsLibrary::GetMagnitudeSpectrum()
+bool UAudioAnalysisToolsLibrary::IsBeat(int32 Subband) const
 {
-	return MagnitudeSpectrum;
+	return BeatDetectionRef->IsBeat(Subband);
 }
 
-bool UAudioAnalysisToolsLibrary::GetEnvelopeValues(TArray<float>& AnalyzedData)
+bool UAudioAnalysisToolsLibrary::IsKick() const
 {
-	return EnvelopeAnalysisRef->GetEnvelopeValues(AudioFrame, AnalyzedData);
+	return BeatDetectionRef->IsKick();
+}
+
+bool UAudioAnalysisToolsLibrary::IsSnare() const
+{
+	return BeatDetectionRef->IsSnare();
+}
+
+bool UAudioAnalysisToolsLibrary::IsHiHat() const
+{
+	return BeatDetectionRef->IsHiHat();
+}
+
+bool UAudioAnalysisToolsLibrary::IsBeatRange(int32 Low, int32 High, int32 Threshold) const
+{
+	return BeatDetectionRef->IsBeatRange(Low, High, Threshold);
+}
+
+float UAudioAnalysisToolsLibrary::GetBand(int32 Subband) const
+{
+	return BeatDetectionRef->GetBand(Subband);
 }
 
 float UAudioAnalysisToolsLibrary::GetRootMeanSquare()
 {
-	return UCoreTimeDomainFeatures::GetRootMeanSquare(AudioFrame);
+	return UCoreTimeDomainFeatures::GetRootMeanSquare(CurrentAudioFrame);
 }
 
 float UAudioAnalysisToolsLibrary::GetPeakEnergy()
 {
-	return UCoreTimeDomainFeatures::GetPeakEnergy(AudioFrame);
+	return UCoreTimeDomainFeatures::GetPeakEnergy(CurrentAudioFrame);
 }
 
 float UAudioAnalysisToolsLibrary::GetZeroCrossingRate()
 {
-	return UCoreTimeDomainFeatures::GetZeroCrossingRate(AudioFrame);
+	return UCoreTimeDomainFeatures::GetZeroCrossingRate(CurrentAudioFrame);
 }
 
 float UAudioAnalysisToolsLibrary::GetSpectralCentroid()
@@ -261,7 +289,7 @@ float UAudioAnalysisToolsLibrary::GetSpectralKurtosis()
 
 float UAudioAnalysisToolsLibrary::GetEnergyDifference()
 {
-	return OnsetDetectionRef->GetEnergyDifference(AudioFrame);
+	return OnsetDetectionRef->GetEnergyDifference(CurrentAudioFrame);
 }
 
 float UAudioAnalysisToolsLibrary::GetSpectralDifference()
@@ -291,7 +319,7 @@ void UAudioAnalysisToolsLibrary::ConfigureFFT()
 		FreeFFT();
 	}
 
-	const int32 FrameSize{AudioFrame.Num()};
+	const int32 FrameSize{CurrentAudioFrame.Num()};
 
 	FFT_InSamples = new kiss_fft_cpx[FrameSize];
 	FFT_OutSamples = new kiss_fft_cpx[FrameSize];
@@ -311,11 +339,11 @@ void UAudioAnalysisToolsLibrary::FreeFFT()
 
 void UAudioAnalysisToolsLibrary::PerformFFT()
 {
-	const int32 FrameSize{AudioFrame.Num()};
+	const int32 FrameSize{CurrentAudioFrame.Num()};
 
 	for (int32 Index = 0; Index < FrameSize; ++Index)
 	{
-		FFT_InSamples[Index].r = AudioFrame[Index] * WindowFunction[Index];
+		FFT_InSamples[Index].r = CurrentAudioFrame[Index] * WindowFunction[Index];
 		FFT_InSamples[Index].i = 0.0;
 	}
 

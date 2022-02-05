@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include "AudioAnalysisToolsDefines.h"
-
+#include "UObject/Object.h"
 #include "OnsetDetection.generated.h"
 
 /**
@@ -13,6 +12,11 @@ UCLASS(BlueprintType, Category = "Onset Detection")
 class AUDIOANALYSISTOOLS_API UOnsetDetection : public UObject
 {
 	GENERATED_BODY()
+
+	/**
+	 * OnsetDetection constructor
+	 */
+	UOnsetDetection();
 public:
 	/**
 	 * Instantiates an Onset Detection object
@@ -31,6 +35,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Onset Detection")
 	void UpdateFrameSize(int32 FrameSize);
 
+	/**
+	 * Calculate the energy envelope
+	 *
+	 * @param AudioFrame An array containing audio frame in 32-bit float PCM format
+	 * @return The energy difference onset detection function sample for the frame
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Onset Detection")
+	float GetEnergyEnvelope(const TArray<float>& AudioFrame);
 
 	/**
 	 * Calculate the energy difference between the current and previous energy sum
@@ -102,21 +114,23 @@ private:
 		return PhaseValue;
 	}
 
-	/** holds the previous energy sum for the energy difference onset detection function */
-	float PrevEnergySum;
+	/** Holds the previous energy sum for the energy difference onset detection function */
+	float PreviousEnergySum;
 
 	/** An array containing the previous magnitude spectrum passed to the last spectral difference call */
-	TArray<float> PrevMagnitudeSpectrum_spectralDifference;
+	TArray<float> PrevMagnitudeSpectrum_SpectralDifference;
 
 	/** An array containing the previous magnitude spectrum passed to the last spectral difference (half wave rectified) call */
-	TArray<float> PrevMagnitudeSpectrum_spectralDifferenceHWR;
+	TArray<float> PrevMagnitudeSpectrum_SpectralDifferenceHWR;
 
 	/** An array containing the previous phase spectrum passed to the last complex spectral difference call */
-	TArray<float> PrevPhaseSpectrum_complexSpectralDifference;
+	TArray<float> PrevPhaseSpectrum_ComplexSpectralDifference;
 
 	/** An array containing the second previous phase spectrum passed to the last complex spectral difference call */
-	TArray<float> PrevPhaseSpectrum2_complexSpectralDifference;
+	TArray<float> PrevPhaseSpectrum2_ComplexSpectralDifference;
 
 	/** An array containing the previous magnitude spectrum passed to the last complex spectral difference call */
-	TArray<float> PrevMagnitudeSpectrum_complexSpectralDifference;
+	TArray<float> PrevMagnitudeSpectrum_ComplexSpectralDifference;
+
+	int32 FrameSize;
 };

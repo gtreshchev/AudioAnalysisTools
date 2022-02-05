@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include "AudioAnalysisToolsDefines.h"
-
+#include "UObject/Object.h"
 #include "CoreTimeDomainFeatures.generated.h"
 
 /**

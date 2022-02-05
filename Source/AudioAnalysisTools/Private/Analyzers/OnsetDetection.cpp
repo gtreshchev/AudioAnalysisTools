@@ -1,43 +1,64 @@
 // Georgy Treshchev 2022.
 
 #include "Analyzers/OnsetDetection.h"
+#include "AudioAnalysisToolsDefines.h"
 #include "Math/UnrealMathUtility.h"
 
-#include "AudioAnalysisToolsDefines.h"
+UOnsetDetection::UOnsetDetection()
+	: FrameSize(0)
+{
+}
 
-UOnsetDetection* UOnsetDetection::CreateOnsetDetection(int32 FrameSize)
+UOnsetDetection* UOnsetDetection::CreateOnsetDetection(int32 InFrameSize)
 {
 	UOnsetDetection* OnsetDetection{NewObject<UOnsetDetection>()};
-	OnsetDetection->UpdateFrameSize(FrameSize);
+	OnsetDetection->UpdateFrameSize(InFrameSize);
 	return OnsetDetection;
 }
 
-void UOnsetDetection::UpdateFrameSize(int32 FrameSize)
+void UOnsetDetection::UpdateFrameSize(int32 InFrameSize)
 {
-	PrevMagnitudeSpectrum_spectralDifference.Init(0.f, FrameSize);
-	PrevMagnitudeSpectrum_spectralDifferenceHWR.Init(0.f, FrameSize);
-	PrevPhaseSpectrum_complexSpectralDifference.Init(0.f, FrameSize);
-	PrevPhaseSpectrum2_complexSpectralDifference.Init(0.f, FrameSize);
-	PrevMagnitudeSpectrum_complexSpectralDifference.Init(0.f, FrameSize);
+	UE_LOG(LogAudioAnalysis, Log, TEXT("Updating Onset Detection frame size from '%d' to '%d'"), FrameSize, InFrameSize);
+	
+	FrameSize = InFrameSize;
 
-	PrevEnergySum = 0;
+	PrevMagnitudeSpectrum_SpectralDifference.SetNum(FrameSize);
+	PrevMagnitudeSpectrum_SpectralDifferenceHWR.SetNum(FrameSize);
+	PrevPhaseSpectrum_ComplexSpectralDifference.SetNum(FrameSize);
+	PrevPhaseSpectrum2_ComplexSpectralDifference.SetNum(FrameSize);
+	PrevMagnitudeSpectrum_ComplexSpectralDifference.SetNum(FrameSize);
+
+	PreviousEnergySum = 0;
 }
 
-float UOnsetDetection::GetEnergyDifference(const TArray<float>& AudioFrame)
+float UOnsetDetection::GetEnergyEnvelope(const TArray<float>& AudioFrame)
 {
-	float Energy{0};
+	float EnergyEnvelopeValue{0};
 
 	/** Sum the squares of the samples */
 	for (const auto& BufferValue : AudioFrame)
 	{
-		Energy += FMath::Pow(BufferValue, 2);
+		EnergyEnvelopeValue += FMath::Pow(BufferValue, 2);
+	}
+
+	return EnergyEnvelopeValue;
+}
+
+float UOnsetDetection::GetEnergyDifference(const TArray<float>& AudioFrame)
+{
+	float EnergyDifferenceValue{0};
+
+	/** Sum the squares of the samples */
+	for (const auto& BufferValue : AudioFrame)
+	{
+		EnergyDifferenceValue += FMath::Pow(BufferValue, 2);
 	}
 
 	/** Sample is first order difference in energy */
-	const float Difference{Energy - PrevEnergySum};
+	const float Difference{EnergyDifferenceValue - PreviousEnergySum};
 
 	/** Store energy value for next calculation */
-	PrevEnergySum = Energy;
+	PreviousEnergySum = EnergyDifferenceValue;
 
 	if (Difference > 0)
 	{
@@ -47,14 +68,19 @@ float UOnsetDetection::GetEnergyDifference(const TArray<float>& AudioFrame)
 	return 0.0;
 }
 
-float UOnsetDetection::GetSpectralDifference(const TArray<float>& magnitudeSpectrum)
+float UOnsetDetection::GetSpectralDifference(const TArray<float>& MagnitudeSpectrum)
 {
+	if (MagnitudeSpectrum.Num() != FrameSize)
+	{
+		UpdateFrameSize(MagnitudeSpectrum.Num());
+	}
+
 	float SpectralDifferenceValue{0};
 
-	for (TArray<float>::SizeType Index = 0; Index < magnitudeSpectrum.Num(); ++Index)
+	for (TArray<float>::SizeType Index = 0; Index < MagnitudeSpectrum.Num(); ++Index)
 	{
 		/** Calculate difference */
-		const float Difference{magnitudeSpectrum[Index] - PrevMagnitudeSpectrum_spectralDifference[Index]};
+		const float Difference{MagnitudeSpectrum[Index] - PrevMagnitudeSpectrum_SpectralDifference[Index]};
 
 		/** Ensure all difference values are positive */
 		FMath::Abs(Difference);
@@ -63,7 +89,7 @@ float UOnsetDetection::GetSpectralDifference(const TArray<float>& magnitudeSpect
 		SpectralDifferenceValue += Difference;
 
 		/** Store the sample for next time */
-		PrevMagnitudeSpectrum_spectralDifference[Index] = magnitudeSpectrum[Index];
+		PrevMagnitudeSpectrum_SpectralDifference[Index] = MagnitudeSpectrum[Index];
 	}
 
 	return SpectralDifferenceValue;
@@ -71,12 +97,17 @@ float UOnsetDetection::GetSpectralDifference(const TArray<float>& magnitudeSpect
 
 float UOnsetDetection::GetSpectralDifferenceHWR(const TArray<float>& MagnitudeSpectrum)
 {
+	if (MagnitudeSpectrum.Num() != FrameSize)
+	{
+		UpdateFrameSize(MagnitudeSpectrum.Num());
+	}
+
 	float SpectralDifferenceHWRValue{0};
 
 	for (TArray<float>::SizeType Index = 0; Index < MagnitudeSpectrum.Num(); ++Index)
 	{
 		/** Calculate difference */
-		const float Difference = MagnitudeSpectrum[Index] - PrevMagnitudeSpectrum_spectralDifferenceHWR[Index];
+		const float Difference = MagnitudeSpectrum[Index] - PrevMagnitudeSpectrum_SpectralDifferenceHWR[Index];
 
 		/** Only for positive changes */
 		if (Difference > 0)
@@ -86,7 +117,7 @@ float UOnsetDetection::GetSpectralDifferenceHWR(const TArray<float>& MagnitudeSp
 		}
 
 		/** Store the sample for next time */
-		PrevMagnitudeSpectrum_spectralDifferenceHWR[Index] = MagnitudeSpectrum[Index];
+		PrevMagnitudeSpectrum_SpectralDifferenceHWR[Index] = MagnitudeSpectrum[Index];
 	}
 
 	return SpectralDifferenceHWRValue;
@@ -94,6 +125,17 @@ float UOnsetDetection::GetSpectralDifferenceHWR(const TArray<float>& MagnitudeSp
 
 float UOnsetDetection::GetComplexSpectralDifference(const TArray<float>& FFTReal, const TArray<float>& FFTImaginary)
 {
+	if (FFTReal.Num() != FFTImaginary.Num())
+	{
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get complex spectral difference: real FFT size ('%d') must equal imaginary FFT size ('%d')"), FFTReal.Num(), FFTImaginary.Num());
+		return -1;
+	}
+
+	if (FFTReal.Num() != FrameSize)
+	{
+		UpdateFrameSize(FFTReal.Num());
+	}
+
 	float ComplexSpectralDifferenceValue{0};
 
 	/** Compute phase values from fft output and sum deviations */
@@ -106,13 +148,13 @@ float UOnsetDetection::GetComplexSpectralDifference(const TArray<float>& FFTReal
 		const float MagnitudeValue{FMath::Sqrt(FMath::Pow(FFTReal[Index], 2) + FMath::Pow(FFTImaginary[Index], 2))};
 
 		/** Phase deviation */
-		const float PhaseDeviation{PhaseValue - (2 * PrevPhaseSpectrum_complexSpectralDifference[Index]) + PrevPhaseSpectrum2_complexSpectralDifference[Index]};
+		const float PhaseDeviation{PhaseValue - (2 * PrevPhaseSpectrum_ComplexSpectralDifference[Index]) + PrevPhaseSpectrum2_ComplexSpectralDifference[Index]};
 
 		/** Wrap into [-pi,pi] range */
 		const float PhasePiRange{Princarg(PhaseDeviation)};
 
 		/** Calculate magnitude difference (real part of Euclidean distance between complex frames) */
-		const float MagnitudeDifference{MagnitudeValue - PrevMagnitudeSpectrum_complexSpectralDifference[Index]};
+		const float MagnitudeDifference{MagnitudeValue - PrevMagnitudeSpectrum_ComplexSpectralDifference[Index]};
 
 		/** Calculate phase difference (imaginary part of Euclidean distance between complex frames) */
 		const float PhaseDifference{-MagnitudeValue * FMath::Sin(PhasePiRange)};
@@ -123,9 +165,9 @@ float UOnsetDetection::GetComplexSpectralDifference(const TArray<float>& FFTReal
 		ComplexSpectralDifferenceValue += Value;
 
 		/** Store values for the next calculation */
-		PrevPhaseSpectrum2_complexSpectralDifference[Index] = PrevPhaseSpectrum_complexSpectralDifference[Index];
-		PrevPhaseSpectrum_complexSpectralDifference[Index] = PhaseValue;
-		PrevMagnitudeSpectrum_complexSpectralDifference[Index] = MagnitudeValue;
+		PrevPhaseSpectrum2_ComplexSpectralDifference[Index] = PrevPhaseSpectrum_ComplexSpectralDifference[Index];
+		PrevPhaseSpectrum_ComplexSpectralDifference[Index] = PhaseValue;
+		PrevMagnitudeSpectrum_ComplexSpectralDifference[Index] = MagnitudeValue;
 	}
 
 	return ComplexSpectralDifferenceValue;

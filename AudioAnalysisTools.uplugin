@@ -2,7 +2,7 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "AudioAnalysisTools",
+	"FriendlyName": "Audio Analysis Tools",
 	"Description": "Audio Analysis Tools plugin for Unreal Engine. Provides a variety of functions for analyzing audio data. Works in conjunction with the Runtime Audio Importer plugin.",
 	"Category": "Audio",
 	"CreatedBy": "Georgy Treshchev",

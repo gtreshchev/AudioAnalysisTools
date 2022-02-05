@@ -1,12 +1,11 @@
 // Georgy Treshchev 2022.
 
 #include "Analyzers/CoreTimeDomainFeatures.h"
-
 #include "AudioAnalysisToolsDefines.h"
 
 float UCoreTimeDomainFeatures::GetRootMeanSquare(const TArray<float>& AudioFrame)
 {
-	float Sum{0};
+	float Sum{0.f};
 
 	/** Sum the squared samples */
 	for (const auto& Frame : AudioFrame)
@@ -42,7 +41,7 @@ float UCoreTimeDomainFeatures::GetPeakEnergy(const TArray<float>& AudioFrame)
 float UCoreTimeDomainFeatures::GetZeroCrossingRate(const TArray<float>& AudioFrame)
 {
 	/** Create a variable to hold the zero crossing rate */
-	float ZeroCrossingRateValue{0};
+	float ZeroCrossingRateValue{0.f};
 
 	/** For each audio sample, starting from the second one */
 	for (TArray<float>::SizeType FrameIndex = 1; FrameIndex < AudioFrame.Num(); ++FrameIndex)

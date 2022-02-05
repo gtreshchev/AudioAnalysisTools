@@ -1,9 +1,8 @@
 // Georgy Treshchev 2022.
 
 #include "Analyzers/CoreFrequencyDomainFeatures.h"
-#include "Algo/Accumulate.h"
-
 #include "AudioAnalysisToolsDefines.h"
+#include "Algo/Accumulate.h"
 
 float UCoreFrequencyDomainFeatures::GetSpectralCentroid(const TArray<float>& MagnitudeSpectrum)
 {
