@@ -175,9 +175,9 @@ public:
 	bool IsSnare() const;
 
 	/**
-	 * Calculate if there was a hit-hat beat in the processed magnitude spectrum
+	 * Calculate if there was a hi-hat beat in the processed magnitude spectrum
 	 *
-	 * @return Whether there was a hit-hat beat or not
+	 * @return Whether there was a hi-hat beat or not
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Analyzers|Beat Detection")
 	bool IsHiHat() const;
