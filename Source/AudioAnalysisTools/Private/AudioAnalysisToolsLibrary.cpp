@@ -8,6 +8,8 @@
 #include "Analyzers/BeatDetection.h"
 #include "Analyzers/OnsetDetection.h"
 
+#include "Async/Async.h"
+
 #include "ThirdParty/kissfft/kiss_fft.c"
 
 UAudioAnalysisToolsLibrary::UAudioAnalysisToolsLibrary()
