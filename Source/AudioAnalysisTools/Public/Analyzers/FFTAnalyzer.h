@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
-#include "KissFFT.generated.h"
+#include "FFTAnalyzer.generated.h"
 
 struct FFTComplexSamples
 {
