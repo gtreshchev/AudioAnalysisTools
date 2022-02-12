@@ -131,15 +131,15 @@ bool UBeatDetection::IsHiHat() const
 
 bool UBeatDetection::IsBeatRange(int32 Low, int32 High, int32 Threshold) const
 {
-	if (!(Low > 0 && Low < FFTSubbandsSize))
+	if (!(Low >= 0 && Low < FFTSubbandsSize))
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot check if beat is in range: low subband is '%d', expected > '0' and < '%d'"), Low, FFTSubbandsSize);
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot check if beat is in range: low subband is '%d', expected >= '0' and < '%d'"), Low, FFTSubbandsSize);
 		return false;
 	}
 
-	if (!(High > 0 && High < FFTSubbandsSize))
+	if (!(High >= 0 && High < FFTSubbandsSize))
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot check if beat is in range: high subband is '%d', expected > '0', < '%d'"), High, FFTSubbandsSize);
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot check if beat is in range: high subband is '%d', expected >= '0', < '%d'"), High, FFTSubbandsSize);
 		return false;
 	}
 

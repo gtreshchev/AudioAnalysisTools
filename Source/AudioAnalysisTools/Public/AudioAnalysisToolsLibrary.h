@@ -6,9 +6,8 @@
 #include "ImportedSoundWave.h"
 #include "WindowsLibrary.h"
 
-#define KISS_FFT_MALLOC FMemory::Malloc
-#define KISS_FFT_FREE FMemory::Free
-#include "ThirdParty/kissfft/kiss_fft.h"
+struct FFTStateStruct;
+struct FFTComplexSamples;
 
 #include "AudioAnalysisToolsLibrary.generated.h"
 
@@ -175,9 +174,9 @@ public:
 	bool IsSnare() const;
 
 	/**
-	 * Calculate if there was a hi-hat beat in the processed magnitude spectrum
+	 * Calculate if there was a hit-hat beat in the processed magnitude spectrum
 	 *
-	 * @return Whether there was a hi-hat beat or not
+	 * @return Whether there was a hit-hat beat or not
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Analyzers|Beat Detection")
 	bool IsHiHat() const;
@@ -320,14 +319,14 @@ private:
 	/** Perform the FFT on the current audio frame */
 	void PerformFFT();
 
-	/** Kiss FFT configuration */
-	kiss_fft_cfg FFT_Configuration;
+	/** FFT configuration */
+	FFTStateStruct* FFT_Configuration;
 
 	/** FFT input samples, in complex for */
-	kiss_fft_cpx* FFT_InSamples;
+	FFTComplexSamples* FFT_InSamples;
 
 	/** FFT output samples, in complex form */
-	kiss_fft_cpx* FFT_OutSamples;
+	FFTComplexSamples* FFT_OutSamples;
 
 	/** The real part of the FFT for the current audio frame */
 	TArray<float> FFTReal;

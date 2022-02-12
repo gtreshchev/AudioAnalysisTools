@@ -8,9 +8,7 @@
 #include "Analyzers/BeatDetection.h"
 #include "Analyzers/OnsetDetection.h"
 
-#include "Async/Async.h"
-
-#include "ThirdParty/kissfft/kiss_fft.c"
+#include "Analyzers/FFTAnalyzer.h"
 
 UAudioAnalysisToolsLibrary::UAudioAnalysisToolsLibrary()
 	: FFTConfigured(false)
@@ -323,9 +321,9 @@ void UAudioAnalysisToolsLibrary::ConfigureFFT()
 
 	const int32 FrameSize{CurrentAudioFrame.Num()};
 
-	FFT_InSamples = new kiss_fft_cpx[FrameSize];
-	FFT_OutSamples = new kiss_fft_cpx[FrameSize];
-	FFT_Configuration = kiss_fft_alloc(FrameSize, 0, nullptr, nullptr);
+	FFT_InSamples = new FFTComplexSamples[FrameSize];
+	FFT_OutSamples = new FFTComplexSamples[FrameSize];
+	FFT_Configuration = UFFTAnalyzer::PerformFFTAlloc(FrameSize, 0, nullptr, nullptr);
 
 	FFTConfigured = true;
 }
@@ -345,18 +343,18 @@ void UAudioAnalysisToolsLibrary::PerformFFT()
 
 	for (int32 Index = 0; Index < FrameSize; ++Index)
 	{
-		FFT_InSamples[Index].r = CurrentAudioFrame[Index] * WindowFunction[Index];
-		FFT_InSamples[Index].i = 0.0;
+		FFT_InSamples[Index].Real = CurrentAudioFrame[Index] * WindowFunction[Index];
+		FFT_InSamples[Index].Imaginary = 0.0;
 	}
 
 	/** Execute kiss fft */
-	kiss_fft(FFT_Configuration, FFT_InSamples, FFT_OutSamples);
+	UFFTAnalyzer::PerformFFT(FFT_Configuration, FFT_InSamples, FFT_OutSamples);
 
 	/** Store real and imaginary parts of FFT */
 	for (int32 Index = 0; Index < FrameSize; ++Index)
 	{
-		FFTReal[Index] = FFT_OutSamples[Index].r;
-		FFTImaginary[Index] = FFT_OutSamples[Index].i;
+		FFTReal[Index] = FFT_OutSamples[Index].Real;
+		FFTImaginary[Index] = FFT_OutSamples[Index].Imaginary;
 	}
 
 	/** Calculate the magnitude spectrum */
