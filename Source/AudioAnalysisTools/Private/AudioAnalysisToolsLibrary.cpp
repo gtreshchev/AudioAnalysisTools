@@ -10,6 +10,8 @@
 
 #include "Analyzers/FFTAnalyzer.h"
 
+#include "Async/Async.h"
+
 UAudioAnalysisToolsLibrary::UAudioAnalysisToolsLibrary()
 	: FFTConfigured(false)
 {

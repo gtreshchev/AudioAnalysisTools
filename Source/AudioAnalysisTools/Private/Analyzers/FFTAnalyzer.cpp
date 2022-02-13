@@ -5,6 +5,8 @@
 #include "AudioAnalysisToolsDefines.h"
 #include "Math/UnrealMathUtility.h"
 
+#include "Async/ParallelFor.h"
+
 void MultiplySamples(FFTComplexSamples& SamplesOut, const FFTComplexSamples& SamplesA, const FFTComplexSamples& SamplesB)
 {
 	SamplesOut.Real = SamplesA.Real * SamplesB.Real - SamplesA.Imaginary * SamplesB.Imaginary;
