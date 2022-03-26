@@ -63,7 +63,7 @@ bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByFramesCustom(UImpor
 		return false;
 	}
 
-	if (EndFrame > ImportedSoundWave->PCMBufferInfo.PCMNumOfFrames)
+	if (static_cast<uint32>(EndFrame) > ImportedSoundWave->PCMBufferInfo.PCMNumOfFrames)
 	{
 		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the PCM Data: end frame ('%d') must be less than total number of frames ('%d')"), EndFrame, ImportedSoundWave->PCMBufferInfo.PCMNumOfFrames);
 		return false;
@@ -72,7 +72,7 @@ bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByFramesCustom(UImpor
 	const int32 NumChannels{ImportedSoundWave->NumChannels};
 
 	uint8* RetrievedPCMData = ImportedSoundWave->PCMBufferInfo.PCMData + (StartFrame * NumChannels * sizeof(float));
-	const int32 RetrievedPCMDataSize = EndFrame - StartFrame;
+	const uint32 RetrievedPCMDataSize = EndFrame - StartFrame;
 
 	if (RetrievedPCMData == nullptr)
 	{
