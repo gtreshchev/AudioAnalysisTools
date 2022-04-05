@@ -342,7 +342,7 @@ void CalculateFactors(int32 Number, int32* Factors)
 	int32 Primes = 4;
 	const double NumberFlooredSqrt = FMath::Floor(FMath::Sqrt(static_cast<double>(Number)));
 
-	/* Factor out powers of 4, powers of 2, then any remaining primes */
+	// Factor out powers of 4, powers of 2, then any remaining primes
 	do
 	{
 		while (Number % Primes)
@@ -361,7 +361,7 @@ void CalculateFactors(int32 Number, int32* Factors)
 			}
 			if (Primes > NumberFlooredSqrt)
 			{
-				/* No more Factors, skip to end */
+				// No more Factors, skip to end
 				Primes = Number;
 			}
 		}

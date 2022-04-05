@@ -48,7 +48,7 @@ void UBeatDetection::UpdateFFT(const TArray<float>& MagnitudeSpectrum)
 {
 	const int32 MagnitudeSpectrumSize{MagnitudeSpectrum.Num()};
 
-	/** Sub-band calculation */
+	// Sub-band calculation
 	for (int32 SubbandIndex = 0; SubbandIndex < FFTSubbandsSize; ++SubbandIndex)
 	{
 		FFTSubbands[SubbandIndex] = 0;
@@ -57,42 +57,42 @@ void UBeatDetection::UpdateFFT(const TArray<float>& MagnitudeSpectrum)
 		{
 			FFTSubbands[SubbandIndex] += MagnitudeSpectrum[SubbandIndex * (MagnitudeSpectrumSize / FFTSubbandsSize) + SubbandInternalIndex];
 		}
-		/** After summing the subband values, divide the added number of times to get the average value */
+		// After summing the subband values, divide the added number of times to get the average value
 		FFTSubbands[SubbandIndex] *= static_cast<float>(FFTSubbandsSize) / MagnitudeSpectrumSize;
 
-		/** Calculation of subband variance value */
+		// Calculation of subband variance value
 		for (int32 SubbandInternalIndex = 0; SubbandInternalIndex < MagnitudeSpectrumSize / FFTSubbandsSize; ++SubbandInternalIndex)
 		{
 			FFTVariance[SubbandIndex] += FMath::Pow(MagnitudeSpectrum[SubbandIndex * (MagnitudeSpectrumSize / FFTSubbandsSize) + SubbandInternalIndex] - FFTSubbands[SubbandIndex], 2);
 		}
 		FFTVariance[SubbandIndex] *= static_cast<float>(FFTSubbandsSize) / MagnitudeSpectrumSize;
 
-		/** Reduce possible noise with linear digression using some magic numbers */
+		// Reduce possible noise with linear digression using some magic numbers
 		FFTBeatValues[SubbandIndex] = (-0.0025714 * FFTVariance[SubbandIndex]) + 1.15142857;
 	}
 
-	/** Calculation of energy average */
+	// Calculation of energy average
 	for (int32 SubbandIndex = 0; SubbandIndex < FFTSubbandsSize; ++SubbandIndex)
 	{
 		FFTAverageEnergy[SubbandIndex] = 0;
 		for (int32 EnergyHistoryIndex = 0; EnergyHistoryIndex < EnergyHistorySize; ++EnergyHistoryIndex)
 		{
-			/** Average of total energy += Energy history of each subband */
+			// Average of total energy += Energy history of each subband
 			FFTAverageEnergy[SubbandIndex] += EnergyHistory[SubbandIndex][EnergyHistoryIndex];
 		}
 
-		/** Divide the sum by the history energy to get a weighted average */
+		// Divide the sum by the history energy to get a weighted average
 		FFTAverageEnergy[SubbandIndex] /= EnergyHistorySize;
 	}
 
-	/** Put new values into the energy history */
+	// Put new values into the energy history
 	for (int32 SubbandIndex = 0; SubbandIndex < FFTSubbandsSize; ++SubbandIndex)
 	{
-		/** Add the calculated subband to the HistoryPosition in the energy history */
+		// Add the calculated subband to the HistoryPosition in the energy history
 		EnergyHistory[SubbandIndex][HistoryPosition] = FFTSubbands[SubbandIndex];
 	}
 
-	/** A pseudo-cyclic list is represented by circular array indexes */
+	// A pseudo-cyclic list is represented by circular array indexes
 	HistoryPosition = (HistoryPosition + 1) % EnergyHistorySize;
 }
 

@@ -332,7 +332,7 @@ void UAudioAnalysisToolsLibrary::ConfigureFFT()
 
 void UAudioAnalysisToolsLibrary::FreeFFT()
 {
-	/** Free the Kiss FFT configuration */
+	// Free the Kiss FFT configuration
 	FMemory::Free(FFT_Configuration);
 
 	delete[] FFT_InSamples;
@@ -349,17 +349,17 @@ void UAudioAnalysisToolsLibrary::PerformFFT()
 		FFT_InSamples[Index].Imaginary = 0.0;
 	}
 
-	/** Execute kiss fft */
+	// Execute kiss fft
 	UFFTAnalyzer::PerformFFT(FFT_Configuration, FFT_InSamples, FFT_OutSamples);
 
-	/** Store real and imaginary parts of FFT */
+	// Store real and imaginary parts of FFT
 	for (int32 Index = 0; Index < FrameSize; ++Index)
 	{
 		FFTReal[Index] = FFT_OutSamples[Index].Real;
 		FFTImaginary[Index] = FFT_OutSamples[Index].Imaginary;
 	}
 
-	/** Calculate the magnitude spectrum */
+	// Calculate the magnitude spectrum
 	for (int32 Index = 0; Index < FrameSize / 2; ++Index)
 	{
 		MagnitudeSpectrum[Index] = FMath::Sqrt(FMath::Pow(FFTReal[Index], 2) + FMath::Pow(FFTImaginary[Index], 2));

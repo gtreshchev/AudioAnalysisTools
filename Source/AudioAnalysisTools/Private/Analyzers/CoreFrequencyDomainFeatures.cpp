@@ -10,13 +10,13 @@ float UCoreFrequencyDomainFeatures::GetSpectralCentroid(const TArray<float>& Mag
 
 	float SumWeightedAmplitudes{0.f};
 
-	/** For each bin in the first half of the magnitude spectrum */
+	// For each bin in the first half of the magnitude spectrum
 	for (TArray<float>::SizeType MagnitudeIndex = 0; MagnitudeIndex < MagnitudeSpectrum.Num(); MagnitudeIndex++)
 	{
-		/** Sum amplitudes */
+		// Sum amplitudes
 		SumAmplitudes += MagnitudeSpectrum[MagnitudeIndex];
 
-		/** Sum amplitudes weighted by the bin number */
+		// Sum amplitudes weighted by the bin number
 		SumWeightedAmplitudes += MagnitudeSpectrum[MagnitudeIndex] * MagnitudeIndex;
 	}
 
@@ -32,7 +32,7 @@ float UCoreFrequencyDomainFeatures::GetSpectralFlatness(const TArray<float>& Mag
 
 	for (const auto& MagnitudeValue : MagnitudeSpectrum)
 	{
-		/** Add one to stop zero values making it always zero */
+		// Add one to stop zero values making it always zero
 		const float Value{1 + MagnitudeValue};
 
 		SumValue += Value;
@@ -73,7 +73,7 @@ float UCoreFrequencyDomainFeatures::GetSpectralCrest(const TArray<float>& Magnit
 	}
 	else
 	{
-		/** This is a ratio so we return 1.0 if the buffer is just zeros */
+		// This is a ratio so we return 1.0 if the buffer is just zeros
 		SpectralCrestValue = 1.0;
 	}
 

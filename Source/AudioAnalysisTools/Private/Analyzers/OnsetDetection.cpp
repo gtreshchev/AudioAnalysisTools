@@ -35,7 +35,7 @@ float UOnsetDetection::GetEnergyEnvelope(const TArray<float>& AudioFrame)
 {
 	float EnergyEnvelopeValue{0};
 
-	/** Sum the squares of the samples */
+	// Sum the squares of the samples
 	for (const auto& BufferValue : AudioFrame)
 	{
 		EnergyEnvelopeValue += FMath::Pow(BufferValue, 2);
@@ -48,16 +48,16 @@ float UOnsetDetection::GetEnergyDifference(const TArray<float>& AudioFrame)
 {
 	float EnergyDifferenceValue{0};
 
-	/** Sum the squares of the samples */
+	// Sum the squares of the samples
 	for (const auto& BufferValue : AudioFrame)
 	{
 		EnergyDifferenceValue += FMath::Pow(BufferValue, 2);
 	}
 
-	/** Sample is first order difference in energy */
+	// Sample is first order difference in energy
 	const float Difference{EnergyDifferenceValue - PreviousEnergySum};
 
-	/** Store energy value for next calculation */
+	// Store energy value for next calculation
 	PreviousEnergySum = EnergyDifferenceValue;
 
 	if (Difference > 0)
@@ -79,16 +79,16 @@ float UOnsetDetection::GetSpectralDifference(const TArray<float>& MagnitudeSpect
 
 	for (TArray<float>::SizeType Index = 0; Index < MagnitudeSpectrum.Num(); ++Index)
 	{
-		/** Calculate difference */
+		// Calculate difference
 		const float Difference{MagnitudeSpectrum[Index] - PrevMagnitudeSpectrum_SpectralDifference[Index]};
 
-		/** Ensure all difference values are positive */
+		// Ensure all difference values are positive
 		FMath::Abs(Difference);
 
-		/** Add difference to sum */
+		// Add difference to sum
 		SpectralDifferenceValue += Difference;
 
-		/** Store the sample for next time */
+		// Store the sample for next time
 		PrevMagnitudeSpectrum_SpectralDifference[Index] = MagnitudeSpectrum[Index];
 	}
 
@@ -106,17 +106,17 @@ float UOnsetDetection::GetSpectralDifferenceHWR(const TArray<float>& MagnitudeSp
 
 	for (TArray<float>::SizeType Index = 0; Index < MagnitudeSpectrum.Num(); ++Index)
 	{
-		/** Calculate difference */
+		// Calculate difference
 		const float Difference = MagnitudeSpectrum[Index] - PrevMagnitudeSpectrum_SpectralDifferenceHWR[Index];
 
-		/** Only for positive changes */
+		// Only for positive changes
 		if (Difference > 0)
 		{
-			/** Add difference to sum */
+			// Add difference to sum
 			SpectralDifferenceHWRValue += Difference;
 		}
 
-		/** Store the sample for next time */
+		// Store the sample for next time
 		PrevMagnitudeSpectrum_SpectralDifferenceHWR[Index] = MagnitudeSpectrum[Index];
 	}
 
@@ -138,33 +138,33 @@ float UOnsetDetection::GetComplexSpectralDifference(const TArray<float>& FFTReal
 
 	float ComplexSpectralDifferenceValue{0};
 
-	/** Compute phase values from fft output and sum deviations */
+	// Compute phase values from fft output and sum deviations
 	for (TArray<float>::SizeType Index = 0; Index < FFTReal.Num(); ++Index)
 	{
-		/** Calculate phase value */
+		// Calculate phase value
 		const float PhaseValue{FMath::Atan2(FFTImaginary[Index], FFTReal[Index])};
 
-		/** Calculate magnitude value */
+		// Calculate magnitude value
 		const float MagnitudeValue{FMath::Sqrt(FMath::Pow(FFTReal[Index], 2) + FMath::Pow(FFTImaginary[Index], 2))};
 
-		/** Phase deviation */
+		// Phase deviation
 		const float PhaseDeviation{PhaseValue - (2 * PrevPhaseSpectrum_ComplexSpectralDifference[Index]) + PrevPhaseSpectrum2_ComplexSpectralDifference[Index]};
 
-		/** Wrap into [-pi,pi] range */
+		// Wrap into [-pi,pi] range
 		const float PhasePiRange{Princarg(PhaseDeviation)};
 
-		/** Calculate magnitude difference (real part of Euclidean distance between complex frames) */
+		// Calculate magnitude difference (real part of Euclidean distance between complex frames)
 		const float MagnitudeDifference{MagnitudeValue - PrevMagnitudeSpectrum_ComplexSpectralDifference[Index]};
 
-		/** Calculate phase difference (imaginary part of Euclidean distance between complex frames) */
+		// Calculate phase difference (imaginary part of Euclidean distance between complex frames)
 		const float PhaseDifference{-MagnitudeValue * FMath::Sin(PhasePiRange)};
 
-		/** Square real and imaginary parts, sum and take square root */
+		// Square real and imaginary parts, sum and take square root
 		const float Value{FMath::Sqrt(FMath::Pow(MagnitudeDifference, 2) + FMath::Pow(PhaseDifference, 2))};
 
 		ComplexSpectralDifferenceValue += Value;
 
-		/** Store values for the next calculation */
+		// Store values for the next calculation
 		PrevPhaseSpectrum2_ComplexSpectralDifference[Index] = PrevPhaseSpectrum_ComplexSpectralDifference[Index];
 		PrevPhaseSpectrum_ComplexSpectralDifference[Index] = PhaseValue;
 		PrevMagnitudeSpectrum_ComplexSpectralDifference[Index] = MagnitudeValue;
