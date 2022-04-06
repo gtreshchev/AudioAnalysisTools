@@ -46,9 +46,8 @@ float UCoreTimeDomainFeatures::GetZeroCrossingRate(const TArray<float>& AudioFra
 	// For each audio sample, starting from the second one
 	for (TArray<float>::SizeType FrameIndex = 1; FrameIndex < AudioFrame.Num(); ++FrameIndex)
 	{
-		//
-		 * Initialise two booleans indicating whether or not
-		 * The current and previous sample are positive
+		// Initialise two booleans indicating whether or not
+		// The current and previous sample are positive
 		
 		const bool bIsCurrentPositive{AudioFrame[FrameIndex] > 0};
 		const bool bIsPreviousPositive{AudioFrame[FrameIndex - 1] > 0};
