@@ -71,7 +71,7 @@ bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByFramesCustom(UImpor
 
 	const int32 NumChannels{ImportedSoundWave->NumChannels};
 
-	uint8* RetrievedPCMData = ImportedSoundWave->PCMBufferInfo.PCMData + (StartFrame * NumChannels * sizeof(float));
+	uint8* RetrievedPCMData = ImportedSoundWave->PCMBufferInfo.PCMData.GetView().GetData() + (StartFrame * NumChannels * sizeof(float));
 	const uint32 RetrievedPCMDataSize = EndFrame - StartFrame;
 
 	if (RetrievedPCMData == nullptr)
@@ -86,9 +86,9 @@ bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByFramesCustom(UImpor
 		return false;
 	}
 
-	if (RetrievedPCMDataSize > ImportedSoundWave->PCMBufferInfo.PCMDataSize)
+	if (RetrievedPCMDataSize > static_cast<uint32>(ImportedSoundWave->PCMBufferInfo.PCMData.GetView().Num()))
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the PCM Data: retrieved PCM Data size (%d) must be less than the total size (%d)"), RetrievedPCMDataSize, static_cast<int32>(ImportedSoundWave->PCMBufferInfo.PCMDataSize));
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the PCM Data: retrieved PCM Data size (%d) must be less than the total size (%d)"), RetrievedPCMDataSize, static_cast<int32>(ImportedSoundWave->PCMBufferInfo.PCMData.GetView().Num()));
 		return false;
 	}
 
@@ -113,15 +113,15 @@ bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByTimeCustom(UImporte
 		return false;
 	}
 
-	if (ImportedSoundWave->PCMBufferInfo.PCMData == nullptr)
+	if (!ImportedSoundWave->PCMBufferInfo.PCMData.GetView().IsValidIndex(0))
 	{
 		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: it is nullptr"));
 		return false;
 	}
 
-	if (ImportedSoundWave->PCMBufferInfo.PCMDataSize <= 0)
+	if (ImportedSoundWave->PCMBufferInfo.PCMData.GetView().Num() <= 0)
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: PCM Data Size is '%d', expected > '0'"), ImportedSoundWave->PCMBufferInfo.PCMDataSize);
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: PCM Data Size is '%d', expected > '0'"), ImportedSoundWave->PCMBufferInfo.PCMData.GetView().Num());
 		return false;
 	}
 
