@@ -1,32 +1,32 @@
 {
-	"FileVersion": 3,
-	"Version": 1,
-	"VersionName": "1.0",
-	"FriendlyName": "Audio Analysis Tools",
-	"Description": "Audio Analysis Tools plugin for Unreal Engine. Provides a variety of functions for analyzing audio data. Works in conjunction with the Runtime Audio Importer plugin.",
-	"Category": "Audio",
-	"CreatedBy": "Georgy Treshchev",
-	"CreatedByURL": "https://github.com/gtreshchev/AudioAnalysisTools",
-	"DocsURL": "https://github.com/gtreshchev/AudioAnalysisTools/wiki",
-	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/54f6567f89184beb9203f6211c791175",
-	"SupportURL": "https://telegram.me/gtreshchev",
-	"EngineVersion": "4.27.0",
-	"EnabledByDefault": true,
-	"CanContainContent": false,
-	"IsBetaVersion": false,
-	"IsExperimentalVersion": false,
-	"Installed": true,
-	"Modules": [
-		{
-			"Name": "AudioAnalysisTools",
-			"Type": "Runtime",
-			"LoadingPhase": "Default"
-		}
-	],
-	"Plugins": [
-		{
-			"Name": "RuntimeAudioImporter",
-			"Enabled": true
-		}
-	]
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "Audio Analysis Tools",
+  "Description": "Audio Analysis Tools plugin for Unreal Engine. Provides a variety of functions for analyzing audio data. Works in conjunction with the Runtime Audio Importer plugin.",
+  "Category": "Audio",
+  "CreatedBy": "Georgy Treshchev",
+  "CreatedByURL": "https://github.com/gtreshchev",
+  "DocsURL": "https://github.com/gtreshchev/AudioAnalysisTools/wiki",
+  "MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/54f6567f89184beb9203f6211c791175",
+  "SupportURL": "https://telegram.me/gtreshchev",
+  "EnabledByDefault": true,
+  "CanContainContent": false,
+  "IsBetaVersion": false,
+  "IsExperimentalVersion": false,
+  "Installed": true,
+  "EngineVersion": "5.0.0",
+  "Modules": [
+    {
+      "Name": "AudioAnalysisTools",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ],
+  "Plugins": [
+    {
+      "Name": "RuntimeAudioImporter",
+      "Enabled": true
+    }
+  ]
 }
