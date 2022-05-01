@@ -51,9 +51,9 @@ bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByFrames(UImportedSou
 
 bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByFramesCustom(UImportedSoundWave* ImportedSoundWave, int32 StartFrame, int32 EndFrame, TArray<float>& AudioFrame)
 {
-	if (!(StartFrame > 0 && StartFrame < EndFrame))
+	if (!(StartFrame >= 0 && StartFrame < EndFrame))
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: start frame is '%f', expected > '0.0' and < '%f'"), StartFrame, EndFrame);
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: start frame is '%f', expected >= '0.0' and < '%f'"), StartFrame, EndFrame);
 		return false;
 	}
 
@@ -131,9 +131,9 @@ bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByTimeCustom(UImporte
 		return false;
 	}
 
-	if (!(StartTime > 0 && StartTime < EndTime))
+	if (!(StartTime >= 0 && StartTime < EndTime))
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: start time is '%f', expected > '0.0' and < '%f'"), StartTime, EndTime);
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: start time is '%f', expected >= '0.0' and < '%f'"), StartTime, EndTime);
 		return false;
 	}
 
