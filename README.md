@@ -4,7 +4,7 @@
     <img src="Resources/Icon128.png" alt="Logo" width="80" height="80">
   </a>
 
-  <h3 align="center">Audio Analysis Tools</h3>
+<h3 align="center">Audio Analysis Tools</h3>
 
   <p align="center">
     Real-time audio data analysis<br>Works in conjunction with the <a href="https://github.com/gtreshchev/runtimeaudioimporter">Runtime Audio Importer</a> plugin
@@ -19,9 +19,9 @@
     .
     <a href="https://t.me/unrealblog">Support Chat</a>
   </p>
-</p>
 
 ## Features
+
 - Beat Detection
 - Onset Detection
 - Core Time Domain Features
