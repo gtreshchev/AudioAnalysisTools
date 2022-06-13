@@ -16,7 +16,7 @@ UBeatDetection* UBeatDetection::CreateBeatDetection(int32 InFFTSubbandsSize, int
 	UBeatDetection* BeatDetection{NewObject<UBeatDetection>()};
 	
 	// We'll set this here, so we only resize the energy history arrays once, in the UpdateFFTSubbandsSize function
-	EnergyHistorySize = InEnergyHistorySize;
+	BeatDetection->EnergyHistorySize = InEnergyHistorySize;
 	BeatDetection->UpdateFFTSubbandsSize(InFFTSubbandsSize);
 	return BeatDetection;
 }
