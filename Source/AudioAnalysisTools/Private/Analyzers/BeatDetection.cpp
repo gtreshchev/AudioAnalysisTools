@@ -14,13 +14,24 @@ UBeatDetection::UBeatDetection()
 UBeatDetection* UBeatDetection::CreateBeatDetection(int32 InFFTSubbandsSize, int32 InEnergyHistorySize)
 {
 	UBeatDetection* BeatDetection{NewObject<UBeatDetection>()};
+	
+	// We'll set this here, so we only resize the energy history arrays once, in the UpdateFFTSubbandsSize function
+	EnergyHistorySize = InEnergyHistorySize;
 	BeatDetection->UpdateFFTSubbandsSize(InFFTSubbandsSize);
-	BeatDetection->UpdateEnergyHistorySize(InEnergyHistorySize);
 	return BeatDetection;
 }
 
 void UBeatDetection::UpdateFFTSubbandsSize(int32 InFFTSubbandsSize)
 {
+	// We'll assume nothing, and make sure our user has made a reasonable request
+	if(InFFTSubbandsSize <= 0)
+	{
+		// Tell the user that they've tried to use an incorrect value, and where they tried it
+		UE_LOG(LogAudioAnalysis, Log, TEXT("Beat Detection FFT subbands size '%d' is invalid, using default of 32"), InFFTSubbandsSize);
+		// Correct their mistake, and move on
+		InFFTSubbandsSize = 32;
+	}
+
 	UE_LOG(LogAudioAnalysis, Log, TEXT("Updating Beat Detection FFT subbands size from '%d' to '%d'"), FFTSubbandsSize, InFFTSubbandsSize);
 	
 	FFTSubbandsSize = InFFTSubbandsSize;
@@ -30,10 +41,22 @@ void UBeatDetection::UpdateFFTSubbandsSize(int32 InFFTSubbandsSize)
 	FFTVariance.SetNum(FFTSubbandsSize);
 	FFTBeatValues.SetNum(FFTSubbandsSize);
 	EnergyHistory.SetNum(FFTSubbandsSize);
+
+	// We resized the external array, so we have to resize the new array
+	UpdateEnergyHistorySize(EnergyHistorySize);
 }
 
 void UBeatDetection::UpdateEnergyHistorySize(int32 InEnergyHistorySize)
 {
+	// We'll assume nothing, and make sure our user has made a reasonable request
+	if (InEnergyHistorySize <= 0)
+	{
+		// Tell the user that they've tried to use an incorrect value, and where they tried it
+		UE_LOG(LogAudioAnalysis, Log, TEXT("Beat Detection energy history size '%d' is invalid, using default of 41"), InEnergyHistorySize);
+		// Correct their mistake, and move on
+		InEnergyHistorySize = 41;
+	}
+
 	UE_LOG(LogAudioAnalysis, Log, TEXT("Updating Beat Detection energy history size from '%d' to '%d'"), EnergyHistorySize, InEnergyHistorySize);
 	
 	EnergyHistorySize = InEnergyHistorySize;
