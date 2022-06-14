@@ -24,12 +24,11 @@ UBeatDetection* UBeatDetection::CreateBeatDetection(int32 InFFTSubbandsSize, int
 void UBeatDetection::UpdateFFTSubbandsSize(int32 InFFTSubbandsSize)
 {
 	// We'll assume nothing, and make sure our user has made a reasonable request
-	if(InFFTSubbandsSize <= 0)
+	if (InFFTSubbandsSize <= 0)
 	{
 		// Tell the user that they've tried to use an incorrect value, and where they tried it
-		UE_LOG(LogAudioAnalysis, Log, TEXT("Beat Detection FFT subbands size '%d' is invalid, using default of 32"), InFFTSubbandsSize);
-		// Correct their mistake, and move on
-		InFFTSubbandsSize = 32;
+		UE_LOG(LogAudioAnalysis, Log, TEXT("Beat Detection FFT subbands size '%d' is invalid"), InFFTSubbandsSize);
+		return;
 	}
 
 	UE_LOG(LogAudioAnalysis, Log, TEXT("Updating Beat Detection FFT subbands size from '%d' to '%d'"), FFTSubbandsSize, InFFTSubbandsSize);
@@ -53,8 +52,7 @@ void UBeatDetection::UpdateEnergyHistorySize(int32 InEnergyHistorySize)
 	{
 		// Tell the user that they've tried to use an incorrect value, and where they tried it
 		UE_LOG(LogAudioAnalysis, Log, TEXT("Beat Detection energy history size '%d' is invalid, using default of 41"), InEnergyHistorySize);
-		// Correct their mistake, and move on
-		InEnergyHistorySize = 41;
+		return;
 	}
 
 	UE_LOG(LogAudioAnalysis, Log, TEXT("Updating Beat Detection energy history size from '%d' to '%d'"), EnergyHistorySize, InEnergyHistorySize);
@@ -126,6 +124,12 @@ void UBeatDetection::ProcessMagnitude(const TArray<float>& MagnitudeSpectrum)
 
 bool UBeatDetection::IsBeat(int32 SubBand) const
 {
+	// Prevent out of array exception
+	if (SubBand >= FFTSubbandsSize)
+	{
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot check if beat: sub band ('%d') must not be greater than sub bands size ('%d')"), SubBand, FFTSubbandsSize);
+		return false;
+	}
 	return FFTSubbands[SubBand] > FFTAverageEnergy[SubBand] * FFTBeatValues[SubBand];
 }
 
