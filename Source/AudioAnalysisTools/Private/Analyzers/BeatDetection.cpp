@@ -27,7 +27,7 @@ void UBeatDetection::UpdateFFTSubbandsSize(int32 InFFTSubbandsSize)
 	if (InFFTSubbandsSize <= 0)
 	{
 		// Tell the user that they've tried to use an incorrect value, and where they tried it
-		UE_LOG(LogAudioAnalysis, Log, TEXT("Beat Detection FFT subbands size '%d' is invalid"), InFFTSubbandsSize);
+		UE_LOG(LogAudioAnalysis, Log, TEXT("Beat Detection FFT subbands size '%d' is invalid, value '%d' remains"), InFFTSubbandsSize, FFTSubbandsSize);
 		return;
 	}
 
@@ -51,7 +51,7 @@ void UBeatDetection::UpdateEnergyHistorySize(int32 InEnergyHistorySize)
 	if (InEnergyHistorySize <= 0)
 	{
 		// Tell the user that they've tried to use an incorrect value, and where they tried it
-		UE_LOG(LogAudioAnalysis, Log, TEXT("Beat Detection energy history size '%d' is invalid, using default of 41"), InEnergyHistorySize);
+		UE_LOG(LogAudioAnalysis, Log, TEXT("Beat Detection energy history size '%d' is invalid, value '%d' remains"), InEnergyHistorySize, EnergyHistorySize);
 		return;
 	}
 
