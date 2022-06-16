@@ -53,13 +53,13 @@ bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByFramesCustom(UImpor
 {
 	if (!(StartFrame >= 0 && StartFrame < EndFrame))
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: start frame is '%f', expected >= '0.0' and < '%f'"), StartFrame, EndFrame);
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: start frame is '%d', expected >= '0.0' and < '%d'"), StartFrame, EndFrame);
 		return false;
 	}
 
 	if (!(EndFrame > 0 && EndFrame > StartFrame))
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: end frame is '%f', expected > '0.0' and < '%f'"), EndFrame, StartFrame);
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: end frame is '%d', expected > '0.0' and < '%d'"), EndFrame, StartFrame);
 		return false;
 	}
 
@@ -76,7 +76,7 @@ bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByFramesCustom(UImpor
 
 	if (RetrievedPCMData == nullptr)
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the PCM Data: retrieved PCM Data is nullptr"), EndFrame, StartFrame);
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the PCM Data: retrieved PCM Data is nullptr"));
 		return false;
 	}
 
