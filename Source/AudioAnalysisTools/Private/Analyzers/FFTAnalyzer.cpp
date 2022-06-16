@@ -376,7 +376,7 @@ FFTStateStruct* UFFTAnalyzer::PerformFFTAlloc(int32 NFFT, int32 Inverse_FFT, voi
 {
 	FFTStateStruct* FFTState = nullptr;
 
-	const int32 MemoryRequired = sizeof(FFTStateStruct) + sizeof(FFTStateStruct*) * (NFFT - 1);
+	const int32 MemoryRequired = sizeof(FFTStateStruct) + sizeof(FFTComplexSamples) * (NFFT - 1);
 
 	if (MemoryLength == nullptr)
 	{
