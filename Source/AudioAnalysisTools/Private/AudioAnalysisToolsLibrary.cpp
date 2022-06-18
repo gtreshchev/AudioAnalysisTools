@@ -337,10 +337,20 @@ void UAudioAnalysisToolsLibrary::FreeFFT()
 
 	delete[] FFT_InSamples;
 	delete[] FFT_OutSamples;
+
+	FFT_Configuration = nullptr;
+	FFT_InSamples = nullptr;
+	FFT_OutSamples = nullptr;
 }
 
 void UAudioAnalysisToolsLibrary::PerformFFT()
 {
+	if (FFT_InSamples == nullptr || FFT_OutSamples == nullptr || FFT_Configuration == nullptr)
+	{
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to perform FFT analysis because the buffers are invalid"));
+		return;
+	}
+	
 	const int32 FrameSize{CurrentAudioFrame.Num()};
 
 	for (int32 Index = 0; Index < FrameSize; ++Index)
