@@ -17,7 +17,7 @@
     .
     <a href="https://github.com/gtreshchev/audioanalysistools/releases">Releases</a>
     .
-    <a href="https://t.me/unrealblog">Support Chat</a>
+    <a href="https://t.me/georgydev">Support Chat</a>
   </p>
 
 ## Features
