@@ -43,7 +43,7 @@ bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWave(UImportedSoundWave* 
 
 bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByFrames(UImportedSoundWave* ImportedSoundWave, int32 FrameSize, TArray<float>& AudioFrame)
 {
-	const int32 StartFrame{ImportedSoundWave != nullptr ? ImportedSoundWave->CurrentNumOfFrames : 0};
+	const int32 StartFrame{ImportedSoundWave ? static_cast<int32>(ImportedSoundWave->GetNumOfPlayedFrames()) : 0};
 	const int32 EndFrame{StartFrame + FrameSize};
 
 	return GetAudioFrameFromSoundWaveByFramesCustom(ImportedSoundWave, StartFrame, EndFrame, AudioFrame);
@@ -53,53 +53,55 @@ bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByFramesCustom(UImpor
 {
 	if (!(StartFrame >= 0 && StartFrame < EndFrame))
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: start frame is '%d', expected >= '0.0' and < '%d'"), StartFrame, EndFrame);
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to get the frame data: start frame is '%d', expected >= '0.0' and < '%d'"), StartFrame, EndFrame);
 		return false;
 	}
 
 	if (!(EndFrame > 0 && EndFrame > StartFrame))
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: end frame is '%d', expected > '0.0' and < '%d'"), EndFrame, StartFrame);
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to get the frame data: end frame is '%d', expected > '0.0' and < '%d'"), EndFrame, StartFrame);
 		return false;
 	}
 
-	if (static_cast<uint32>(EndFrame) > ImportedSoundWave->PCMBufferInfo.PCMNumOfFrames)
+	FScopeLock Lock(ImportedSoundWave->GetPCMBuffer().GetDataGuard());
+
+	if (static_cast<uint32>(EndFrame) > ImportedSoundWave->GetPCMBuffer().PCMNumOfFrames)
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the PCM Data: end frame ('%d') must be less than total number of frames ('%d')"), EndFrame, ImportedSoundWave->PCMBufferInfo.PCMNumOfFrames);
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to get the PCM Data: end frame ('%d') must be less than total number of frames ('%d')"), EndFrame, ImportedSoundWave->GetPCMBuffer().PCMNumOfFrames);
 		return false;
 	}
 
 	const int32 NumChannels{ImportedSoundWave->NumChannels};
 
-	uint8* RetrievedPCMData = ImportedSoundWave->PCMBufferInfo.PCMData.GetView().GetData() + (StartFrame * NumChannels * sizeof(float));
+	const float* RetrievedPCMData = ImportedSoundWave->GetPCMBuffer().PCMData.GetView().GetData() + (StartFrame * NumChannels);
 	const uint32 RetrievedPCMDataSize = EndFrame - StartFrame;
 
-	if (RetrievedPCMData == nullptr)
+	if (!RetrievedPCMData)
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the PCM Data: retrieved PCM Data is nullptr"));
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to get the PCM Data: retrieved PCM Data is nullptr"));
 		return false;
 	}
 
 	if (RetrievedPCMDataSize <= 0)
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the PCM Data: retrieved PCM Data size is '%d', must be > 0 (%d - %d)"), RetrievedPCMDataSize, EndFrame, StartFrame);
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to get the PCM Data: retrieved PCM Data size is '%d', must be > 0 (%d - %d)"), RetrievedPCMDataSize, EndFrame, StartFrame);
 		return false;
 	}
 
-	if (RetrievedPCMDataSize > static_cast<uint32>(ImportedSoundWave->PCMBufferInfo.PCMData.GetView().Num()))
+	if (RetrievedPCMDataSize > static_cast<uint32>(ImportedSoundWave->GetPCMBuffer().PCMData.GetView().Num()))
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the PCM Data: retrieved PCM Data size (%d) must be less than the total size (%d)"), RetrievedPCMDataSize, static_cast<int32>(ImportedSoundWave->PCMBufferInfo.PCMData.GetView().Num()));
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to get the PCM Data: retrieved PCM Data size (%d) must be less than the total size (%d)"), RetrievedPCMDataSize, static_cast<int32>(ImportedSoundWave->GetPCMBuffer().PCMData.GetView().Num()));
 		return false;
 	}
 
-	AudioFrame = TArray<float>(reinterpret_cast<float*>(RetrievedPCMData), RetrievedPCMDataSize);
+	AudioFrame = TArray<float>(RetrievedPCMData, RetrievedPCMDataSize);
 
 	return true;
 }
 
 bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByTime(UImportedSoundWave* ImportedSoundWave, float TimeLength, TArray<float>& AudioFrame)
 {
-	const float StartTime{ImportedSoundWave != nullptr ? ImportedSoundWave->GetPlaybackTime() : 0.f};
+	const float StartTime{ImportedSoundWave ? ImportedSoundWave->GetPlaybackTime() : 0.f};
 	const float EndTime{StartTime + TimeLength};
 
 	return GetAudioFrameFromSoundWaveByTimeCustom(ImportedSoundWave, StartTime, EndTime, AudioFrame);
@@ -107,54 +109,59 @@ bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByTime(UImportedSound
 
 bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByTimeCustom(UImportedSoundWave* ImportedSoundWave, float StartTime, float EndTime, TArray<float>& AudioFrame)
 {
-	if (ImportedSoundWave == nullptr)
+	if (!ImportedSoundWave)
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: the specified sound wave is nullptr"));
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to get the audio frame: the specified sound wave is nullptr"));
 		return false;
 	}
 
-	if (!ImportedSoundWave->PCMBufferInfo.PCMData.GetView().IsValidIndex(0))
+	int32 StartFrame, EndFrame;
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: it is nullptr"));
-		return false;
+		FScopeLock Lock(ImportedSoundWave->GetPCMBuffer().GetDataGuard());
+
+		if (!ImportedSoundWave->GetPCMBuffer().IsValid())
+		{
+			UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to get the audio frame: PCM buffer is invalid"));
+			return false;
+		}
+
+		if (ImportedSoundWave->GetPCMBuffer().PCMData.GetView().Num() <= 0)
+		{
+			UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to get the frame data: PCM Data Size is '%d', expected > '0'"), ImportedSoundWave->GetPCMBuffer().PCMData.GetView().Num());
+			return false;
+		}
+
+		if (ImportedSoundWave->GetPCMBuffer().PCMNumOfFrames <= 0)
+		{
+			UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to get the frame data: PCM Num Of Frames is '%d', expected more than '0'"), ImportedSoundWave->GetPCMBuffer().PCMNumOfFrames);
+			return false;
+		}
+
+		if (!(StartTime >= 0 && StartTime < EndTime))
+		{
+			UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to get the frame data: start time is '%f', expected >= '0.0' and < '%f'"), StartTime, EndTime);
+			return false;
+		}
+
+		if (!(EndTime > 0 && EndTime > StartTime))
+		{
+			UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to get the frame data: end time is '%f', expected > '0.0' and < '%f'"), EndTime, StartTime);
+			return false;
+		}
+
+		const float Duration{ImportedSoundWave->GetDurationConst_Internal()};
+
+		if (EndTime > Duration)
+		{
+			UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to get the PCM Data: end time (%f) must be less than the sound wave duration (%f)"), EndTime, Duration);
+			return false;
+		}
+
+		const int32 SamplingRate{ImportedSoundWave->GetSampleRate()};
+
+		StartFrame = StartTime * SamplingRate;
+		EndFrame = EndTime * SamplingRate;
 	}
-
-	if (ImportedSoundWave->PCMBufferInfo.PCMData.GetView().Num() <= 0)
-	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: PCM Data Size is '%d', expected > '0'"), ImportedSoundWave->PCMBufferInfo.PCMData.GetView().Num());
-		return false;
-	}
-
-	if (ImportedSoundWave->PCMBufferInfo.PCMNumOfFrames <= 0)
-	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: PCM Num Of Frames is '%d', expected more than '0'"), ImportedSoundWave->PCMBufferInfo.PCMNumOfFrames);
-		return false;
-	}
-
-	if (!(StartTime >= 0 && StartTime < EndTime))
-	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: start time is '%f', expected >= '0.0' and < '%f'"), StartTime, EndTime);
-		return false;
-	}
-
-	if (!(EndTime > 0 && EndTime > StartTime))
-	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the Sample Data: end time is '%f', expected > '0.0' and < '%f'"), EndTime, StartTime);
-		return false;
-	}
-
-	const float Duration{ImportedSoundWave->GetDurationConst()};
-
-	if (EndTime > Duration)
-	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get the PCM Data: end time (%f) must be less than the sound wave duration (%f)"), EndTime, Duration);
-		return false;
-	}
-
-	const int32 SamplingRate{ImportedSoundWave->SamplingRate};
-
-	const int32 StartFrame{static_cast<int32>(StartTime * SamplingRate)};
-	const int32 EndFrame{static_cast<int32>(EndTime * SamplingRate)};
 
 	return GetAudioFrameFromSoundWaveByFramesCustom(ImportedSoundWave, StartFrame, EndFrame, AudioFrame);
 }
@@ -345,12 +352,12 @@ void UAudioAnalysisToolsLibrary::FreeFFT()
 
 void UAudioAnalysisToolsLibrary::PerformFFT()
 {
-	if (FFT_InSamples == nullptr || FFT_OutSamples == nullptr || FFT_Configuration == nullptr)
+	if (!FFT_InSamples || !FFT_OutSamples || !FFT_Configuration)
 	{
 		UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to perform FFT analysis because the buffers are invalid"));
 		return;
 	}
-	
+
 	const int32 FrameSize{CurrentAudioFrame.Num()};
 
 	for (int32 Index = 0; Index < FrameSize; ++Index)
