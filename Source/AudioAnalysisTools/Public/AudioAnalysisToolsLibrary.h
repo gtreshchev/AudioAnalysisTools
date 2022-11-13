@@ -3,7 +3,7 @@
 #pragma once
 
 #include "UObject/Object.h"
-#include "ImportedSoundWave.h"
+#include "Sound/ImportedSoundWave.h"
 #include "WindowsLibrary.h"
 
 struct FFTStateStruct;

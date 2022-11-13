@@ -63,7 +63,7 @@ bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByFramesCustom(UImpor
 		return false;
 	}
 
-	FScopeLock Lock(ImportedSoundWave->GetPCMBuffer().GetDataGuard());
+	FScopeLock Lock(&ImportedSoundWave->DataGuard);
 
 	if (static_cast<uint32>(EndFrame) > ImportedSoundWave->GetPCMBuffer().PCMNumOfFrames)
 	{
@@ -117,7 +117,7 @@ bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByTimeCustom(UImporte
 
 	int32 StartFrame, EndFrame;
 	{
-		FScopeLock Lock(ImportedSoundWave->GetPCMBuffer().GetDataGuard());
+		FScopeLock Lock(&ImportedSoundWave->DataGuard);
 
 		if (!ImportedSoundWave->GetPCMBuffer().IsValid())
 		{
@@ -136,6 +136,9 @@ bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByTimeCustom(UImporte
 			UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to get the frame data: PCM Num Of Frames is '%d', expected more than '0'"), ImportedSoundWave->GetPCMBuffer().PCMNumOfFrames);
 			return false;
 		}
+
+		StartTime -= ImportedSoundWave->GetDurationOffset_Internal();
+		EndTime -= ImportedSoundWave->GetDurationOffset_Internal();
 
 		if (!(StartTime >= 0 && StartTime < EndTime))
 		{
