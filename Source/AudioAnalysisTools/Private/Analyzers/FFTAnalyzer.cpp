@@ -4,6 +4,7 @@
 
 #include "AudioAnalysisToolsDefines.h"
 #include "Math/UnrealMathUtility.h"
+#include "Launch/Resources/Version.h"
 
 #include "Async/ParallelFor.h"
 
@@ -340,7 +341,13 @@ void UFFTAnalyzer::PerformFFT(FFTStateStruct* FFTState, const FFTComplexSamples*
 void CalculateFactors(int32 Number, int32* Factors)
 {
 	int32 Primes = 4;
-	const double NumberFlooredSqrt = FMath::Floor(FMath::Sqrt(static_cast<double>(Number)));
+
+#if ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION <= 26
+#define ProcessFloor(Value) floor(Value)
+#else
+#define ProcessFloor(Value) FMath::Floor(Value)
+#endif
+const double NumberFlooredSqrt = ProcessFloor(FMath::Sqrt(static_cast<double>(Number)));
 
 	// Factor out powers of 4, powers of 2, then any remaining primes
 	do
