@@ -11,6 +11,7 @@
 #include "Analyzers/FFTAnalyzer.h"
 
 #include "Async/Async.h"
+#include "UObject/GCObjectScopeGuard.h"
 
 UAudioAnalysisToolsLibrary::UAudioAnalysisToolsLibrary()
 	: FFTConfigured(false)
@@ -127,7 +128,7 @@ bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByTimeCustom(UImporte
 
 		if (ImportedSoundWave->GetPCMBuffer().PCMData.GetView().Num() <= 0)
 		{
-			UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to get the frame data: PCM Data Size is '%d', expected > '0'"), ImportedSoundWave->GetPCMBuffer().PCMData.GetView().Num());
+			UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to get the frame data: PCM Data Size is '%lld', expected > '0'"), static_cast<int64>(ImportedSoundWave->GetPCMBuffer().PCMData.GetView().Num()));
 			return false;
 		}
 
@@ -203,8 +204,9 @@ void UAudioAnalysisToolsLibrary::ProcessAudioFrame(const TArray<float>& AudioFra
 
 	CurrentAudioFrame = AudioFrame;
 
-	AsyncTask(ENamedThreads::AnyThread, [this, bProcessToBeatDetection]()
+	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [this, bProcessToBeatDetection]()
 	{
+		FGCObjectScopeGuard Guard(this);
 		PerformFFT();
 
 		if (bProcessToBeatDetection)
