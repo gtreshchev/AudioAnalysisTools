@@ -1,13 +1,13 @@
 <br/>
 <p align="center">
-  <a href="https://github.com/gtreshchev/audioanalysistools">
+  <a href="https://github.com/gtreshchev/AudioAnalysisTools">
     <img src="Resources/Icon128.png" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center">Audio Analysis Tools</h3>
 
   <p align="center">
-    Real-time audio data analysis<br>Works in conjunction with the <a href="https://github.com/gtreshchev/runtimeaudioimporter">Runtime Audio Importer</a> plugin
+    Real-time audio data analysis<br>Works in conjunction with the <a href="https://github.com/gtreshchev/RuntimeAudioImporter">Runtime Audio Importer</a> plugin
     <br/>
     <br/>
     <a href="https://github.com/gtreshchev/AudioAnalysisTools/wiki/"><strong>Explore the docs »</strong></a>
@@ -15,9 +15,11 @@
     <br/>
     <a href="https://unrealengine.com/marketplace/product/audio-analysis-tools">Marketplace</a>
     .
-    <a href="https://github.com/gtreshchev/audioanalysistools/releases">Releases</a>
+    <a href="https://github.com/gtreshchev/AudioAnalysisTools/releases">Releases</a>
+    <br/>
+    <a href="https://t.me/georgydev">Telegram</a>
     .
-    <a href="https://t.me/georgydev">Support Chat</a>
+    <a href="https://discord.gg/s3e53uByCq">Discord</a>
   </p>
 
 ## Features
