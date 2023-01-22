@@ -99,13 +99,13 @@ private:
 	 */
 	static FORCEINLINE float Princarg(float PhaseValue)
 	{
-		/** If phase value is less than or equal to -PI then add 2 * PI */
+		// If phase value is less than or equal to -PI then add 2 * PI
 		while (PhaseValue <= -PI)
 		{
 			PhaseValue += 2 * PI;
 		}
 
-		/** If phase value is larger than PI, then subtract 2 * PI */
+		// If phase value is larger than PI, then subtract 2 * PI
 		while (PhaseValue > PI)
 		{
 			PhaseValue -= 2 * PI;

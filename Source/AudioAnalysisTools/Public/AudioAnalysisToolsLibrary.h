@@ -54,7 +54,8 @@ public:
 	void ProcessAudioFrame(const TArray<float>& AudioFrame, bool bProcessToBeatDetection = true);
 
 	/**
-	 * Get audio frame from sound wave. Intended to be called as the sound wave plays
+	 * Get audio frame from sound wave
+	 * Gets the audio data starting from the current playing time of the sound wave with the size of the AudioFrame equal to the predefined FrameSize
 	 *
 	 * @param ImportedSoundWave Sound wave to extract audio data
 	 * @param AudioFrame An array containing audio frame in 32-bit float PCM format
@@ -63,7 +64,8 @@ public:
 	bool GetAudioFrameFromSoundWave(UImportedSoundWave* ImportedSoundWave, TArray<float>& AudioFrame);
 
 	/**
-	 * Get audio frame from sound wave. Intended to be called as the sound wave plays
+	 * Get audio frame from sound wave
+	 * Gets the audio data starting from the current playing time of the sound wave with the size of the AudioFrame equal to the input FrameSize
 	 *
 	 * @param ImportedSoundWave Sound wave to extract audio data
 	 * @param FrameSize The frame size of internal buffers for extracting audio data. The smaller the buffer size, the greater the performance, but less accuracy
@@ -73,7 +75,7 @@ public:
 	bool GetAudioFrameFromSoundWaveByFrames(UImportedSoundWave* ImportedSoundWave, int32 FrameSize, TArray<float>& AudioFrame);
 
 	/**
-	 * Get audio frame from sound wave. Intended to be called as the sound wave plays
+	 * Get audio frame from sound wave, from StartFrame to EndFrame frames
 	 *
 	 * @param ImportedSoundWave Sound wave to extract audio data
 	 * @param StartFrame Start frame size for extracting audio data
@@ -84,7 +86,8 @@ public:
 	bool GetAudioFrameFromSoundWaveByFramesCustom(UImportedSoundWave* ImportedSoundWave, int32 StartFrame, int32 EndFrame, TArray<float>& AudioFrame);
 
 	/**
-	 * Get audio frame from sound wave. Intended to be called as the sound wave plays
+	 * Get audio frame from sound wave
+	 * Gets the audio data starting from the current playing time of the sound wave with the size of the AudioFrame equal to the input TimeLength
 	 *
 	 * @param ImportedSoundWave Sound wave to extract audio data
 	 * @param TimeLength Audio length to extract audio data
@@ -94,7 +97,7 @@ public:
 	bool GetAudioFrameFromSoundWaveByTime(UImportedSoundWave* ImportedSoundWave, float TimeLength, TArray<float>& AudioFrame);
 
 	/**
-	 * Get audio frame from sound wave. Intended to be called as the sound wave plays
+	 * Get audio frame from sound wave, from StartTime to EndTime times
 	 *
 	 * @param ImportedSoundWave Sound wave to extract audio data
 	 * @param StartTime Start time for extracting audio data
@@ -105,7 +108,7 @@ public:
 	bool GetAudioFrameFromSoundWaveByTimeCustom(UImportedSoundWave* ImportedSoundWave, float StartTime, float EndTime, TArray<float>& AudioFrame);
 
 	/**
-	 * Update the frame size. The smaller the buffer size, the greater the performance, but less accuracy.
+	 * Update the frame size. The smaller the buffer size, the greater the performance, but less accuracy
 	 *
 	 * @param FrameSize The frame size of internal buffers
 	 * @note You do not need to call it manually if you use "ProcessAudioFrameFromSoundWave"
@@ -350,9 +353,9 @@ private:
 public:
 	/** Reference to the Beat Detection */
 	UPROPERTY(BlueprintReadOnly, Category = "Audio Analysis Tools|References")
-	UBeatDetection* BeatDetectionRef;
+	UBeatDetection* BeatDetection;
 
 	/** Reference to the Onset Detection */
 	UPROPERTY(BlueprintReadOnly, Category = "Audio Analysis Tools|References")
-	UOnsetDetection* OnsetDetectionRef;
+	UOnsetDetection* OnsetDetection;
 };

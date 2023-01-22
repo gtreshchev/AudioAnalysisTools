@@ -172,8 +172,11 @@ bool UAudioAnalysisToolsLibrary::GetAudioFrameFromSoundWaveByTimeCustom(UImporte
 
 void UAudioAnalysisToolsLibrary::Initialize(int32 FrameSize, EAnalysisWindowType InWindowType)
 {
-	BeatDetectionRef = UBeatDetection::CreateBeatDetection();
-	OnsetDetectionRef = UOnsetDetection::CreateOnsetDetection(FrameSize);
+	BeatDetection = UBeatDetection::CreateBeatDetection();
+	check(BeatDetection);
+	
+	OnsetDetection = UOnsetDetection::CreateOnsetDetection(FrameSize);
+	check(OnsetDetection);
 
 	WindowType = InWindowType;
 
@@ -211,7 +214,7 @@ void UAudioAnalysisToolsLibrary::ProcessAudioFrame(const TArray<float>& AudioFra
 
 		if (bProcessToBeatDetection)
 		{
-			BeatDetectionRef->ProcessMagnitude(MagnitudeSpectrum);
+			BeatDetection->ProcessMagnitude(MagnitudeSpectrum);
 		}
 	});
 }
@@ -233,32 +236,38 @@ void UAudioAnalysisToolsLibrary::UpdateFrameSize(int32 FrameSize)
 
 bool UAudioAnalysisToolsLibrary::IsBeat(int32 Subband) const
 {
-	return BeatDetectionRef->IsBeat(Subband);
+	check(BeatDetection);
+	return BeatDetection->IsBeat(Subband);
 }
 
 bool UAudioAnalysisToolsLibrary::IsKick() const
 {
-	return BeatDetectionRef->IsKick();
+	check(BeatDetection);
+	return BeatDetection->IsKick();
 }
 
 bool UAudioAnalysisToolsLibrary::IsSnare() const
 {
-	return BeatDetectionRef->IsSnare();
+	check(BeatDetection);
+	return BeatDetection->IsSnare();
 }
 
 bool UAudioAnalysisToolsLibrary::IsHiHat() const
 {
-	return BeatDetectionRef->IsHiHat();
+	check(BeatDetection);
+	return BeatDetection->IsHiHat();
 }
 
 bool UAudioAnalysisToolsLibrary::IsBeatRange(int32 Low, int32 High, int32 Threshold) const
 {
-	return BeatDetectionRef->IsBeatRange(Low, High, Threshold);
+	check(BeatDetection);
+	return BeatDetection->IsBeatRange(Low, High, Threshold);
 }
 
 float UAudioAnalysisToolsLibrary::GetBand(int32 Subband) const
 {
-	return BeatDetectionRef->GetBand(Subband);
+	check(BeatDetection);
+	return BeatDetection->GetBand(Subband);
 }
 
 float UAudioAnalysisToolsLibrary::GetRootMeanSquare()
@@ -303,27 +312,32 @@ float UAudioAnalysisToolsLibrary::GetSpectralKurtosis()
 
 float UAudioAnalysisToolsLibrary::GetEnergyDifference()
 {
-	return OnsetDetectionRef->GetEnergyDifference(CurrentAudioFrame);
+	check(OnsetDetection);
+	return OnsetDetection->GetEnergyDifference(CurrentAudioFrame);
 }
 
 float UAudioAnalysisToolsLibrary::GetSpectralDifference()
 {
-	return OnsetDetectionRef->GetSpectralDifference(MagnitudeSpectrum);
+	check(OnsetDetection);
+	return OnsetDetection->GetSpectralDifference(MagnitudeSpectrum);
 }
 
 float UAudioAnalysisToolsLibrary::GetSpectralDifferenceHWR()
 {
-	return OnsetDetectionRef->GetSpectralDifferenceHWR(MagnitudeSpectrum);
+	check(OnsetDetection);
+	return OnsetDetection->GetSpectralDifferenceHWR(MagnitudeSpectrum);
 }
 
 float UAudioAnalysisToolsLibrary::GetComplexSpectralDifference()
 {
-	return OnsetDetectionRef->GetComplexSpectralDifference(FFTReal, FFTImaginary);
+	check(OnsetDetection);
+	return OnsetDetection->GetComplexSpectralDifference(FFTReal, FFTImaginary);
 }
 
 float UAudioAnalysisToolsLibrary::GetHighFrequencyContent()
 {
-	return OnsetDetectionRef->GetHighFrequencyContent(MagnitudeSpectrum);
+	check(OnsetDetection);
+	return OnsetDetection->GetHighFrequencyContent(MagnitudeSpectrum);
 }
 
 void UAudioAnalysisToolsLibrary::ConfigureFFT()
