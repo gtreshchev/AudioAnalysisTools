@@ -23,16 +23,12 @@ UCLASS(BlueprintType, Category = "Audio Analysis Tools")
 class AUDIOANALYSISTOOLS_API UAudioAnalysisToolsLibrary : public UObject
 {
 	GENERATED_BODY()
-
-	/**
-	 * AudioAnalysisTools constructor
-	 */
+	
 	UAudioAnalysisToolsLibrary();
-
-	/**
-	 * AudioAnalysisTools destructor
-	 */
+	
+	//~ Begin UObject Interface
 	virtual void BeginDestroy() override;
+	//~ End UObject Interface
 
 public:
 	/**
@@ -42,7 +38,7 @@ public:
 	 * @param WindowType The type of window function to use
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Main")
-	static UAudioAnalysisToolsLibrary* CreateAudioAnalysisTools(int32 FrameSize = 4096, EAnalysisWindowType WindowType = EAnalysisWindowType::HanningWindow);
+	static UAudioAnalysisToolsLibrary* CreateAudioAnalysisTools(int64 FrameSize = 4096, EAnalysisWindowType WindowType = EAnalysisWindowType::HanningWindow);
 
 	/**
 	 * Process audio frame
@@ -54,58 +50,58 @@ public:
 	void ProcessAudioFrame(const TArray<float>& AudioFrame, bool bProcessToBeatDetection = true);
 
 	/**
-	 * Get audio frame from sound wave
-	 * Gets the audio data starting from the current playing time of the sound wave with the size of the AudioFrame equal to the predefined FrameSize
+	 * Get audio from imported sound wave by current playback time
+	 * Gets the audio data starting from the current playback time of the sound wave with the size of FrameSize
 	 *
 	 * @param ImportedSoundWave Sound wave to extract audio data
 	 * @param AudioFrame An array containing audio frame in 32-bit float PCM format
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Main")
-	bool GetAudioFrameFromSoundWave(UImportedSoundWave* ImportedSoundWave, TArray<float>& AudioFrame);
+	bool GetAudioByCurrentTime(UImportedSoundWave* ImportedSoundWave, TArray<float>& AudioFrame);
 
 	/**
-	 * Get audio frame from sound wave
+	 * Get audio from imported sound wave by frame size
 	 * Gets the audio data starting from the current playing time of the sound wave with the size of the AudioFrame equal to the input FrameSize
 	 *
 	 * @param ImportedSoundWave Sound wave to extract audio data
 	 * @param FrameSize The frame size of internal buffers for extracting audio data. The smaller the buffer size, the greater the performance, but less accuracy
-	 * @param AudioFrame An array containing audio frame in 32-bit float PCM format
+	 * @param AudioFrames An array containing audio frames in 32-bit float PCM format
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Advanced")
-	bool GetAudioFrameFromSoundWaveByFrames(UImportedSoundWave* ImportedSoundWave, int32 FrameSize, TArray<float>& AudioFrame);
+	bool GetAudioByFrameSize(UImportedSoundWave* ImportedSoundWave, int64 FrameSize, TArray<float>& AudioFrames);
 
 	/**
-	 * Get audio frame from sound wave, from StartFrame to EndFrame frames
+	 * Get audio from imported sound wave by frame range (from StartFrame to EndFrame frames)
 	 *
 	 * @param ImportedSoundWave Sound wave to extract audio data
 	 * @param StartFrame Start frame size for extracting audio data
 	 * @param EndFrame End frame size for extracting audio data
-	 * @param AudioFrame An array containing audio frame in 32-bit float PCM format
+	 * @param AudioFrames An array containing audio frames in 32-bit float PCM format
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Advanced")
-	bool GetAudioFrameFromSoundWaveByFramesCustom(UImportedSoundWave* ImportedSoundWave, int32 StartFrame, int32 EndFrame, TArray<float>& AudioFrame);
+	bool GetAudioByFrameRange(UImportedSoundWave* ImportedSoundWave, int64 StartFrame, int64 EndFrame, TArray<float>& AudioFrames);
 
 	/**
-	 * Get audio frame from sound wave
+	 * Get audio from imported sound wave by time length
 	 * Gets the audio data starting from the current playing time of the sound wave with the size of the AudioFrame equal to the input TimeLength
 	 *
 	 * @param ImportedSoundWave Sound wave to extract audio data
 	 * @param TimeLength Audio length to extract audio data
-	 * @param AudioFrame An array containing audio frame in 32-bit float PCM format
+	 * @param AudioFrames An array containing audio frames in 32-bit float PCM format
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Advanced")
-	bool GetAudioFrameFromSoundWaveByTime(UImportedSoundWave* ImportedSoundWave, float TimeLength, TArray<float>& AudioFrame);
+	bool GetAudioByTimeLength(UImportedSoundWave* ImportedSoundWave, float TimeLength, TArray<float>& AudioFrames);
 
 	/**
-	 * Get audio frame from sound wave, from StartTime to EndTime times
+	 * Get audio from imported sound wave by time range (from StartTime to EndTime times)
 	 *
 	 * @param ImportedSoundWave Sound wave to extract audio data
 	 * @param StartTime Start time for extracting audio data
 	 * @param EndTime End time for extracting audio data
-	 * @param AudioFrame An array containing audio frame in 32-bit float PCM format
+	 * @param AudioFrames An array containing audio frames in 32-bit float PCM format
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Advanced")
-	bool GetAudioFrameFromSoundWaveByTimeCustom(UImportedSoundWave* ImportedSoundWave, float StartTime, float EndTime, TArray<float>& AudioFrame);
+	bool GetAudioByTimeRange(UImportedSoundWave* ImportedSoundWave, float StartTime, float EndTime, TArray<float>& AudioFrames);
 
 	/**
 	 * Update the frame size. The smaller the buffer size, the greater the performance, but less accuracy
@@ -114,7 +110,7 @@ public:
 	 * @note You do not need to call it manually if you use "ProcessAudioFrameFromSoundWave"
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Advanced")
-	void UpdateFrameSize(int32 FrameSize);
+	void UpdateFrameSize(int64 FrameSize);
 
 private:
 	/**
@@ -123,7 +119,7 @@ private:
 	 * @param FrameSize The frame size of internal buffers. The smaller the buffer size, the greater the performance, but less accuracy
 	 * @param WindowType The type of window function to use
 	 */
-	void Initialize(int32 FrameSize, EAnalysisWindowType WindowType = EAnalysisWindowType::HanningWindow);
+	void Initialize(int64 FrameSize, EAnalysisWindowType WindowType = EAnalysisWindowType::HanningWindow);
 
 public:
 	/**
@@ -132,7 +128,14 @@ public:
 	 * @return The current magnitude spectrum
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Analyzers|Advanced")
-	const TArray<float>& GetMagnitudeSpectrum() const;
+	TArray<float> GetMagnitudeSpectrum() const;
+
+	/**
+	 * Get magnitude spectrum. Suitable for use with 64-bit data size
+	 *
+	 * @return The current magnitude spectrum
+	 */
+	const TArray64<float>& GetMagnitudeSpectrum64() const;
 
 	/**
 	 * Get FFT Real
@@ -140,7 +143,9 @@ public:
 	 * @return The current FFT Real
 	 */
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get FFT Real"), Category = "Audio Analysis Tools|Analyzers|Advanced")
-	const TArray<float>& GetFFTReal() const;
+	TArray<float> GetFFTReal() const;
+	
+	const TArray64<float>& GetFFTReal64() const;
 
 	/**
 	 * Get FFT Imaginary
@@ -148,7 +153,14 @@ public:
 	 * @return The current FFT Imaginary
 	 */
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get FFT Imaginary"), Category = "Audio Analysis Tools|Analyzers|Advanced")
-	const TArray<float>& GetFFTImaginary() const;
+	TArray<float> GetFFTImaginary() const;
+
+	/**
+	 * Get FFT Imaginary. Suitable for use with 64-bit data size
+	 *
+	 * @return The current FFT Imaginary
+	 */
+	const TArray64<float>& GetFFTImaginary64() const;
 
 public:
 	/**
@@ -158,7 +170,7 @@ public:
 	 * @return Whether there was a beat or not
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Analyzers|Beat Detection")
-	bool IsBeat(int32 Subband) const;
+	bool IsBeat(int64 Subband) const;
 
 	/**
 	 * Calculate if there was a kick beat in the processed magnitude spectrum
@@ -193,7 +205,7 @@ public:
 	 * @return Whether there was a beat or not
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Analyzers|Beat Detection")
-	bool IsBeatRange(int32 Low, int32 High, int32 Threshold) const;
+	bool IsBeatRange(int64 Low, int64 High, int64 Threshold) const;
 
 	/**
 	 * Get the value of the specified sub-band
@@ -202,7 +214,7 @@ public:
 	 * @return The value of the specified sub-band
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Analyzers|Beat Detection")
-	float GetBand(int32 Subband) const;
+	float GetBand(int64 Subband) const;
 
 	/**
 	 * Calculate the Root Mean Square (RMS) of an audio buffer in vector format
@@ -332,23 +344,23 @@ private:
 	FFTComplexSamples* FFT_OutSamples;
 
 	/** The real part of the FFT for the current audio frame */
-	TArray<float> FFTReal;
+	TArray64<float> FFTReal;
 
 	/** The imaginary part of the FFT for the current audio frame */
-	TArray<float> FFTImaginary;
+	TArray64<float> FFTImaginary;
 
 private:
 	/** The window type used in FFT analysis */
 	EAnalysisWindowType WindowType;
 
-	/** Current audio frame */
-	TArray<float> CurrentAudioFrame;
+	/** Current audio frames */
+	TArray64<float> CurrentAudioFrames;
 
 	/** The window function used in FFT processing */
-	TArray<float> WindowFunction;
+	TArray64<float> WindowFunction;
 
 	/** The magnitude spectrum of the current audio frame */
-	TArray<float> MagnitudeSpectrum;
+	TArray64<float> MagnitudeSpectrum;
 
 public:
 	/** Reference to the Beat Detection */

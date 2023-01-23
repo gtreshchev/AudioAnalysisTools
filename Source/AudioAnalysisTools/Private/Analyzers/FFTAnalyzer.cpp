@@ -44,7 +44,7 @@ void ApplyExponent(FFTComplexSamples* Samples, double Phase)
 	Samples->Imaginary = FMath::Sin(Phase);
 }
 
-void CalculateButterfly2(FFTComplexSamples* SamplesOut, const uint16 Stride, const FFTStateStruct* FFTState, uint16 StageFFTLength)
+void CalculateButterfly2(FFTComplexSamples* SamplesOut, int64 Stride, const FFTStateStruct* FFTState, int64 StageFFTLength)
 {
 	const FFTComplexSamples* SamplesTwiddles = FFTState->Twiddles;
 
@@ -66,12 +66,12 @@ void CalculateButterfly2(FFTComplexSamples* SamplesOut, const uint16 Stride, con
 	while (--StageFFTLength);
 }
 
-void CalculateButterfly4(FFTComplexSamples* SamplesOut, const uint16 Stride, const FFTStateStruct* FFTState, uint16 StageFFTLength)
+void CalculateButterfly4(FFTComplexSamples* SamplesOut, int64 Stride, const FFTStateStruct* FFTState, int64 StageFFTLength)
 {
-	uint16 StageFFTLengthTemp = StageFFTLength;
+	int64 StageFFTLengthTemp = StageFFTLength;
 
-	const uint16 StageFFTLength2 = 2 * StageFFTLength;
-	const uint16 StageFFTLength3 = 3 * StageFFTLength;
+	const int64 StageFFTLength2 = 2 * StageFFTLength;
+	const int64 StageFFTLength3 = 3 * StageFFTLength;
 
 	const FFTComplexSamples *Twiddles1, *Twiddles2, *Twiddles3;
 	Twiddles3 = Twiddles2 = Twiddles1 = FFTState->Twiddles;
@@ -113,10 +113,10 @@ void CalculateButterfly4(FFTComplexSamples* SamplesOut, const uint16 Stride, con
 	while (--StageFFTLengthTemp);
 }
 
-void CalculateButterfly3(FFTComplexSamples* SamplesOut, const uint16 Stride, const FFTStateStruct* FFTState, uint16 StageFFTLength)
+void CalculateButterfly3(FFTComplexSamples* SamplesOut, int64 Stride, const FFTStateStruct* FFTState, int64 StageFFTLength)
 {
-	uint16 StageFFTLengthTemp = StageFFTLength;
-	const uint16 DoubleStageFFTLength = 2 * StageFFTLength;
+	int64 StageFFTLengthTemp = StageFFTLength;
+	const int64 DoubleStageFFTLength = 2 * StageFFTLength;
 
 	const FFTComplexSamples EPI3 = FFTState->Twiddles[Stride * StageFFTLength];
 
@@ -153,7 +153,7 @@ void CalculateButterfly3(FFTComplexSamples* SamplesOut, const uint16 Stride, con
 	while (--StageFFTLengthTemp);
 }
 
-void CalculateButterfly5(FFTComplexSamples* SamplesOut, const uint16 Stride, const FFTStateStruct* FFTState, uint16 StageFFTLength)
+void CalculateButterfly5(FFTComplexSamples* SamplesOut, int64 Stride, const FFTStateStruct* FFTState, int64 StageFFTLength)
 {
 	const FFTComplexSamples* Twiddles = FFTState->Twiddles;
 	const FFTComplexSamples YaSamples = Twiddles[Stride * StageFFTLength];
@@ -167,7 +167,7 @@ void CalculateButterfly5(FFTComplexSamples* SamplesOut, const uint16 Stride, con
 
 	FFTComplexSamples Scratch[13];
 
-	for (int32 StageFFTIndex = 0; StageFFTIndex < StageFFTLength; ++StageFFTIndex)
+	for (int64 StageFFTIndex = 0; StageFFTIndex < StageFFTLength; ++StageFFTIndex)
 	{
 		Scratch[0] = *SamplesOut0;
 
@@ -209,19 +209,19 @@ void CalculateButterfly5(FFTComplexSamples* SamplesOut, const uint16 Stride, con
 	}
 }
 
-void CalculateButterfly_Generic(FFTComplexSamples* Samples, const uint16 Stride, const FFTStateStruct* FFTState, uint16 StageFFTLength, int32 Radix)
+void CalculateButterfly_Generic(FFTComplexSamples* Samples, int64 Stride, const FFTStateStruct* FFTState, int64 StageFFTLength, int64 Radix)
 {
 	const FFTComplexSamples* Twiddles = FFTState->Twiddles;
 
-	const int32 Norig = FFTState->NFFT;
+	const int64 Norig = FFTState->NFFT;
 
 	FFTComplexSamples* Scratch = static_cast<FFTComplexSamples*>(FMemory::Malloc(sizeof(FFTComplexSamples) * Radix));
 
-	for (int32 StageFFTIndex = 0; StageFFTIndex < StageFFTLength; ++StageFFTIndex)
+	for (int64 StageFFTIndex = 0; StageFFTIndex < StageFFTLength; ++StageFFTIndex)
 	{
-		int32 RadixIndex;
+		int64 RadixIndex;
 
-		int32 TempStageFFTIndex = StageFFTIndex;
+		int64 TempStageFFTIndex = StageFFTIndex;
 		for (RadixIndex = 0; RadixIndex < Radix; ++RadixIndex)
 		{
 			Scratch[RadixIndex] = Samples[TempStageFFTIndex];
@@ -231,10 +231,10 @@ void CalculateButterfly_Generic(FFTComplexSamples* Samples, const uint16 Stride,
 		TempStageFFTIndex = StageFFTIndex;
 		for (RadixIndex = 0; RadixIndex < Radix; ++RadixIndex)
 		{
-			int32 Twidx = 0;
+			int64 Twidx = 0;
 			Samples[TempStageFFTIndex] = Scratch[0];
 			
-			for (int32 RadixIndex1 = 1; RadixIndex1 < Radix; ++RadixIndex1)
+			for (int64 RadixIndex1 = 1; RadixIndex1 < Radix; ++RadixIndex1)
 			{
 				FFTComplexSamples OutSamples;
 				
@@ -255,19 +255,19 @@ void CalculateButterfly_Generic(FFTComplexSamples* Samples, const uint16 Stride,
 	FMemory::Free(Scratch);
 }
 
-void DoWork(FFTComplexSamples* SamplesOut, const FFTComplexSamples* SamplesIn, const uint16 Stride, int32 InStride, int32* Factors, const FFTStateStruct* FFTState)
+void DoWork(FFTComplexSamples* SamplesOut, const FFTComplexSamples* SamplesIn, int64 Stride, int64 InStride, int64* Factors, const FFTStateStruct* FFTState)
 {
 	FFTComplexSamples* SamplesOut_Beg = SamplesOut;
 
-	const int32 Radix = *Factors++;
-	const int32 StageFFTLength = *Factors++;
+	const int64 Radix = *Factors++;
+	const int64 StageFFTLength = *Factors++;
 
 	const FFTComplexSamples* SamplesOut_End = SamplesOut + Radix * StageFFTLength;
 
 	if (Stride == 1 && Radix <= 5 && StageFFTLength != 1)
 	{
 		ParallelFor(
-			Radix, [&](int32 RadixIndex)
+			Radix, [&](int64 RadixIndex)
 			{
 				DoWork(SamplesOut + RadixIndex * StageFFTLength, SamplesIn + Stride * InStride * RadixIndex, Stride * Radix, InStride, Factors, FFTState);
 			},
@@ -316,7 +316,7 @@ void DoWork(FFTComplexSamples* SamplesOut, const FFTComplexSamples* SamplesIn, c
 	}
 }
 
-void UFFTAnalyzer::PerformFFTStride(FFTStateStruct* FFTState, const FFTComplexSamples* SamplesIn, FFTComplexSamples* SamplesOut, int32 Stride)
+void UFFTAnalyzer::PerformFFTStride(FFTStateStruct* FFTState, const FFTComplexSamples* SamplesIn, FFTComplexSamples* SamplesOut, int64 Stride)
 {
 	if (SamplesIn == SamplesOut)
 	{
@@ -338,16 +338,17 @@ void UFFTAnalyzer::PerformFFT(FFTStateStruct* FFTState, const FFTComplexSamples*
 	PerformFFTStride(FFTState, SamplesIn, SamplesOut, 1);
 }
 
-void CalculateFactors(int32 Number, int32* Factors)
+void CalculateFactors(int64 Number, int64* Factors)
 {
-	int32 Primes = 4;
+	int64 Primes = 4;
 
 #if ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION <= 26
-#define ProcessFloor(Value) floor(Value)
+auto ProcessFloor = [](double Value){ return floor(Value); };
 #else
-#define ProcessFloor(Value) FMath::Floor(Value)
+auto ProcessFloor = [](double Value){ return FMath::Floor(Value); };
 #endif
-const double NumberFlooredSqrt = ProcessFloor(FMath::Sqrt(static_cast<double>(Number)));
+
+	const double NumberFlooredSqrt = ProcessFloor(FMath::Sqrt(static_cast<double>(Number)));
 
 	// Factor out powers of 4, powers of 2, then any remaining primes
 	do
@@ -379,11 +380,11 @@ const double NumberFlooredSqrt = ProcessFloor(FMath::Sqrt(static_cast<double>(Nu
 	while (Number > 1);
 }
 
-FFTStateStruct* UFFTAnalyzer::PerformFFTAlloc(int32 NFFT, int32 Inverse_FFT, void* MemoryPtr, int32* MemoryLength)
+FFTStateStruct* UFFTAnalyzer::PerformFFTAlloc(int64 NFFT, int64 Inverse_FFT, void* MemoryPtr, int64* MemoryLength)
 {
 	FFTStateStruct* FFTState = nullptr;
 
-	const int32 MemoryRequired = sizeof(FFTStateStruct) + sizeof(FFTComplexSamples) * (NFFT - 1);
+	const int64 MemoryRequired = sizeof(FFTStateStruct) + sizeof(FFTComplexSamples) * (NFFT - 1);
 
 	if (MemoryLength == nullptr)
 	{
@@ -391,7 +392,7 @@ FFTStateStruct* UFFTAnalyzer::PerformFFTAlloc(int32 NFFT, int32 Inverse_FFT, voi
 	}
 	else
 	{
-		if (MemoryPtr != nullptr && *MemoryLength >= MemoryRequired)
+		if (MemoryPtr && *MemoryLength >= MemoryRequired)
 		{
 			FFTState = static_cast<FFTStateStruct*>(MemoryPtr);
 		}
@@ -404,7 +405,7 @@ FFTStateStruct* UFFTAnalyzer::PerformFFTAlloc(int32 NFFT, int32 Inverse_FFT, voi
 		FFTState->NFFT = NFFT;
 		FFTState->Inverse = Inverse_FFT;
 
-		for (int32 NFFT_Index = 0; NFFT_Index < NFFT; ++NFFT_Index)
+		for (int64 NFFT_Index = 0; NFFT_Index < NFFT; ++NFFT_Index)
 		{
 			double Phase = -2 * PI * NFFT_Index / NFFT;
 

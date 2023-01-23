@@ -17,11 +17,8 @@ class AUDIOANALYSISTOOLS_API UBeatDetection : public UObject
 {
 	GENERATED_BODY()
 
-	/**
-	 * BeatDetection constructor
-	 */
 	UBeatDetection();
-	
+
 public:
 	/**
 	 * Instantiates a Beat Detection object
@@ -29,10 +26,9 @@ public:
 	 * @return The BeatDetection object
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Beat Detection|Main")
-	static UBeatDetection* CreateBeatDetection(int32 FFTSubbandsSize = 32, int32 EnergyHistorySize = 41);
+	static UBeatDetection* CreateBeatDetection(int64 FFTSubbandsSize = 32, int64 EnergyHistorySize = 41);
 
 public:
-
 	/**
 	 * Update FFT sub-bands size
 	 *
@@ -40,7 +36,7 @@ public:
 	 * @note Commonly used 32
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Beat Detection|Update")
-	void UpdateFFTSubbandsSize(int32 FFTSubbandsSize = 32);
+	void UpdateFFTSubbandsSize(int64 FFTSubbandsSize = 32);
 
 	/**
 	 * Update the size of the energy history storage
@@ -49,7 +45,7 @@ public:
 	 * @note The larger the specified value, the more the detector will remember the magnitudes to calculate the average energy value. However, a value that is too high may affect performance
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Beat Detection|Update")
-	void UpdateEnergyHistorySize(int32 EnergyHistorySize = 41);
+	void UpdateEnergyHistorySize(int64 EnergyHistorySize = 41);
 
 	/**
 	 * Process magnitude spectrum
@@ -60,13 +56,20 @@ public:
 	void ProcessMagnitude(const TArray<float>& MagnitudeSpectrum);
 
 	/**
+	 * Process magnitude spectrum. Suitable for use with 64-bit data size
+	 * 
+	 * @param MagnitudeSpectrum An array containing the magnitude spectrum
+	 */
+	void ProcessMagnitude(const TArray64<float>& MagnitudeSpectrum);
+
+	/**
 	 * Calculate if there was beat in the processed magnitude spectrum
 	 *
 	 * @param Subband FFT sub-band index
 	 * @return Whether there was a beat or not
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Beat Detection|Main")
-	bool IsBeat(int32 Subband) const;
+	bool IsBeat(int64 Subband) const;
 
 	/**
 	 * Calculate if there was a kick beat in the processed magnitude spectrum
@@ -101,8 +104,8 @@ public:
 	 * @return Whether there was a beat or not
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Beat Detection|Main")
-	bool IsBeatRange(int32 Low, int32 High, int32 Threshold) const;
-	
+	bool IsBeatRange(int64 Low, int64 High, int64 Threshold) const;
+
 	/**
 	 * Get the value of the specified sub-band
 	 * 
@@ -110,7 +113,7 @@ public:
 	 * @return The value of the specified sub-band
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Beat Detection|Main")
-	float GetBand(int32 Subband) const;
+	float GetBand(int64 Subband) const;
 
 private:
 	/**
@@ -118,29 +121,29 @@ private:
 	 * 
 	 * @param MagnitudeSpectrum An array containing the magnitude spectrum
 	 */
-	void UpdateFFT(const TArray<float>& MagnitudeSpectrum);
+	void UpdateFFT(const TArray64<float>& MagnitudeSpectrum);
 
 	/** Raw value for each sub-band */
-	TArray<float> FFTSubbands;
-	
+	TArray64<float> FFTSubbands;
+
 	/** Average sub-band energy value based on energy history */
-	TArray<float> FFTAverageEnergy;
+	TArray64<float> FFTAverageEnergy;
 
 	/** Sub-band variance value */
-	TArray<float> FFTVariance;
+	TArray64<float> FFTVariance;
 
 	/** Normalized beat values for each sub-band */
-	TArray<float> FFTBeatValues;
+	TArray64<float> FFTBeatValues;
 
 	/** History of energy needed to "memorize" previous magnitudes */
-	TArray<TArray<float>> EnergyHistory;
+	TArray64<TArray64<float>> EnergyHistory;
 
 	/** Current position to track energy history */
-	int32 HistoryPosition;
+	int64 HistoryPosition;
 
 	/** FFT sub-bands size (usually 32) */
-	int32 FFTSubbandsSize;
+	int64 FFTSubbandsSize;
 
 	/** Energy history storage size */
-	int32 EnergyHistorySize;
+	int64 EnergyHistorySize;
 };

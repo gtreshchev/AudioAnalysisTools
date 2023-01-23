@@ -5,10 +5,15 @@
 
 float UCoreTimeDomainFeatures::GetRootMeanSquare(const TArray<float>& AudioFrame)
 {
-	float Sum{0.f};
+	return GetRootMeanSquare(TArray64<float>(AudioFrame));
+}
+
+float UCoreTimeDomainFeatures::GetRootMeanSquare(const TArray64<float>& AudioFrame)
+{
+	float Sum = 0;
 
 	// Sum the squared samples
-	for (const auto& Frame : AudioFrame)
+	for (const float Frame : AudioFrame)
 	{
 		Sum += FMath::Pow(Frame, 2);
 	}
@@ -19,10 +24,15 @@ float UCoreTimeDomainFeatures::GetRootMeanSquare(const TArray<float>& AudioFrame
 
 float UCoreTimeDomainFeatures::GetPeakEnergy(const TArray<float>& AudioFrame)
 {
+	return GetPeakEnergy(TArray64<float>(AudioFrame));
+}
+
+float UCoreTimeDomainFeatures::GetPeakEnergy(const TArray64<float>& AudioFrame)
+{
 	// Create variable with very small value to hold the peak value
-	float Peak{-10000.f};
-	
-	for (const auto& Frame : AudioFrame)
+	float Peak = -10000.f;
+
+	for (const float Frame : AudioFrame)
 	{
 		// Store the absolute value of the sample
 		const float AbsSample = FMath::Abs(Frame);
@@ -40,15 +50,20 @@ float UCoreTimeDomainFeatures::GetPeakEnergy(const TArray<float>& AudioFrame)
 
 float UCoreTimeDomainFeatures::GetZeroCrossingRate(const TArray<float>& AudioFrame)
 {
+	return GetZeroCrossingRate(TArray64<float>(AudioFrame));
+}
+
+float UCoreTimeDomainFeatures::GetZeroCrossingRate(const TArray64<float>& AudioFrame)
+{
 	// Create a variable to hold the zero crossing rate
 	float ZeroCrossingRateValue{0.f};
 
 	// For each audio sample, starting from the second one
-	for (TArray<float>::SizeType FrameIndex = 1; FrameIndex < AudioFrame.Num(); ++FrameIndex)
+	for (TArray64<float>::SizeType FrameIndex = 1; FrameIndex < AudioFrame.Num(); ++FrameIndex)
 	{
 		// Initialise two booleans indicating whether or not
 		// The current and previous sample are positive
-		
+
 		const bool bIsCurrentPositive{AudioFrame[FrameIndex] > 0};
 		const bool bIsPreviousPositive{AudioFrame[FrameIndex - 1] > 0};
 
@@ -59,6 +74,6 @@ float UCoreTimeDomainFeatures::GetZeroCrossingRate(const TArray<float>& AudioFra
 			ZeroCrossingRateValue += 1.0;
 		}
 	}
-	
+
 	return ZeroCrossingRateValue;
 }

@@ -6,12 +6,17 @@
 
 float UCoreFrequencyDomainFeatures::GetSpectralCentroid(const TArray<float>& MagnitudeSpectrum)
 {
-	float SumAmplitudes{0.f};
+	return GetSpectralCentroid(TArray64<float>(MagnitudeSpectrum));
+}
 
-	float SumWeightedAmplitudes{0.f};
+float UCoreFrequencyDomainFeatures::GetSpectralCentroid(const TArray64<float>& MagnitudeSpectrum)
+{
+	float SumAmplitudes = 0;
+
+	float SumWeightedAmplitudes = 0;
 
 	// For each bin in the first half of the magnitude spectrum
-	for (TArray<float>::SizeType MagnitudeIndex = 0; MagnitudeIndex < MagnitudeSpectrum.Num(); MagnitudeIndex++)
+	for (TArray64<float>::SizeType MagnitudeIndex = 0; MagnitudeIndex < MagnitudeSpectrum.Num(); MagnitudeIndex++)
 	{
 		// Sum amplitudes
 		SumAmplitudes += MagnitudeSpectrum[MagnitudeIndex];
@@ -27,10 +32,15 @@ float UCoreFrequencyDomainFeatures::GetSpectralCentroid(const TArray<float>& Mag
 
 float UCoreFrequencyDomainFeatures::GetSpectralFlatness(const TArray<float>& MagnitudeSpectrum)
 {
-	float SumValue{0.f};
-	float LogSumValue{0.f};
+	return GetSpectralFlatness(TArray64<float>(MagnitudeSpectrum));
+}
 
-	for (const auto& MagnitudeValue : MagnitudeSpectrum)
+float UCoreFrequencyDomainFeatures::GetSpectralFlatness(const TArray64<float>& MagnitudeSpectrum)
+{
+	float SumValue = 0;
+	float LogSumValue = 0;
+
+	for (const float MagnitudeValue : MagnitudeSpectrum)
 	{
 		// Add one to stop zero values making it always zero
 		const float Value{1 + MagnitudeValue};
@@ -42,17 +52,22 @@ float UCoreFrequencyDomainFeatures::GetSpectralFlatness(const TArray<float>& Mag
 	SumValue = SumValue / static_cast<float>(MagnitudeSpectrum.Num());
 	LogSumValue = LogSumValue / static_cast<float>(MagnitudeSpectrum.Num());
 
-	const float SpectralFlatnessValue{SumValue > 0 ? FGenericPlatformMath::Exp(LogSumValue) / SumValue : 0.f};
+	const float SpectralFlatnessValue = SumValue > 0 ? FGenericPlatformMath::Exp(LogSumValue) / SumValue : 0.f;
 
 	return SpectralFlatnessValue;
 }
 
 float UCoreFrequencyDomainFeatures::GetSpectralCrest(const TArray<float>& MagnitudeSpectrum)
 {
-	float SumValue{0.f};
-	float MaxValue{0.f};
+	return GetSpectralCrest(TArray64<float>(MagnitudeSpectrum));
+}
 
-	for (const auto& MagnitudeValue : MagnitudeSpectrum)
+float UCoreFrequencyDomainFeatures::GetSpectralCrest(const TArray64<float>& MagnitudeSpectrum)
+{
+	float SumValue = 0;
+	float MaxValue = 0;
+
+	for (const float MagnitudeValue : MagnitudeSpectrum)
 	{
 		const float Value{FMath::Pow(MagnitudeValue, 2)};
 
@@ -82,7 +97,12 @@ float UCoreFrequencyDomainFeatures::GetSpectralCrest(const TArray<float>& Magnit
 
 float UCoreFrequencyDomainFeatures::GetSpectralRolloff(const TArray<float>& MagnitudeSpectrum, const float Percentile)
 {
-	TArray<float>::SizeType Index{0};
+	return GetSpectralRolloff(TArray64<float>(MagnitudeSpectrum), Percentile);
+}
+
+float UCoreFrequencyDomainFeatures::GetSpectralRolloff(const TArray64<float>& MagnitudeSpectrum, const float Percentile)
+{
+	TArray64<float>::SizeType Index{0};
 
 	{
 		const float SumOfMagnitudeSpectrum{Algo::Accumulate<float>(MagnitudeSpectrum, 0.f)};
@@ -90,7 +110,7 @@ float UCoreFrequencyDomainFeatures::GetSpectralRolloff(const TArray<float>& Magn
 
 		float CumulativeSum{0};
 
-		for (TArray<float>::SizeType i = 0; i < MagnitudeSpectrum.Num(); ++i)
+		for (TArray64<float>::SizeType i = 0; i < MagnitudeSpectrum.Num(); ++i)
 		{
 			CumulativeSum += MagnitudeSpectrum[i];
 
@@ -109,6 +129,11 @@ float UCoreFrequencyDomainFeatures::GetSpectralRolloff(const TArray<float>& Magn
 
 float UCoreFrequencyDomainFeatures::GetSpectralKurtosis(const TArray<float>& MagnitudeSpectrum)
 {
+	return GetSpectralKurtosis(TArray64<float>(MagnitudeSpectrum));
+}
+
+float UCoreFrequencyDomainFeatures::GetSpectralKurtosis(const TArray64<float>& MagnitudeSpectrum)
+{
 	float Moment2{0.f};
 	float Moment4{0.f};
 
@@ -116,7 +141,7 @@ float UCoreFrequencyDomainFeatures::GetSpectralKurtosis(const TArray<float>& Mag
 		const float SumOfMagnitudeSpectrum{Algo::Accumulate<float>(MagnitudeSpectrum, 0.f)};
 		const float Mean{SumOfMagnitudeSpectrum / static_cast<float>(MagnitudeSpectrum.Num())};
 
-		for (const auto& MagnitudeValue : MagnitudeSpectrum)
+		for (const float MagnitudeValue : MagnitudeSpectrum)
 		{
 			const float Difference{MagnitudeValue - Mean};
 			const float SquaredDifference{FMath::Pow(Difference, 2)};

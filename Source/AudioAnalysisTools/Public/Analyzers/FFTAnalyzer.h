@@ -12,13 +12,13 @@ struct FFTComplexSamples
 	float Imaginary;
 };
 
-#define MAXFACTORS 32
+constexpr int32 MaxFactors = 32;
 
 struct FFTStateStruct
 {
-	int32 NFFT;
-	int32 Inverse;
-	int32 Factors[2 * MAXFACTORS];
+	int64 NFFT;
+	int64 Inverse;
+	int64 Factors[2 * MaxFactors];
 	FFTComplexSamples Twiddles[1];
 };
 
@@ -33,7 +33,7 @@ class AUDIOANALYSISTOOLS_API UFFTAnalyzer : public UObject
 public:
 	static void PerformFFT(FFTStateStruct* FFTState, const FFTComplexSamples* SamplesIn, FFTComplexSamples* SamplesOut);
 
-	static FFTStateStruct* PerformFFTAlloc(int32 NFFT, int32 Inverse_FFT, void* MemoryPtr, int32* MemoryLength);
+	static FFTStateStruct* PerformFFTAlloc(int64 NFFT, int64 Inverse_FFT, void* MemoryPtr, int64* MemoryLength);
 	
-	static void PerformFFTStride(FFTStateStruct* FFTState, const FFTComplexSamples* SamplesIn, FFTComplexSamples* SamplesOut, int32 Stride);
+	static void PerformFFTStride(FFTStateStruct* FFTState, const FFTComplexSamples* SamplesIn, FFTComplexSamples* SamplesOut, int64 Stride);
 };
