@@ -41,27 +41,27 @@ public:
 	static UAudioAnalysisToolsLibrary* CreateAudioAnalysisTools(int64 FrameSize = 4096, EAnalysisWindowType WindowType = EAnalysisWindowType::HanningWindow);
 
 	/**
-	 * Process audio frame
+	 * Process audio frames
 	 * 
-	 * @param AudioFrame An array containing audio frame in 32-bit float PCM format
+	 * @param AudioFrames An array containing audio frames in 32-bit float PCM format
 	 * @param bProcessToBeatDetection Whether to process audio frame to beat detection or not
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Main")
-	void ProcessAudioFrame(const TArray<float>& AudioFrame, bool bProcessToBeatDetection = true);
+	void ProcessAudioFrames(const TArray<float>& AudioFrames, bool bProcessToBeatDetection = true);
 
 	/**
 	 * Get audio from imported sound wave by current playback time
 	 * Gets the audio data starting from the current playback time of the sound wave with the size of FrameSize
 	 *
 	 * @param ImportedSoundWave Sound wave to extract audio data
-	 * @param AudioFrame An array containing audio frame in 32-bit float PCM format
+	 * @param AudioFrames An array containing audio frames in 32-bit float PCM format
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Main")
-	bool GetAudioByCurrentTime(UImportedSoundWave* ImportedSoundWave, TArray<float>& AudioFrame);
+	bool GetAudioByCurrentTime(UImportedSoundWave* ImportedSoundWave, TArray<float>& AudioFrames);
 
 	/**
 	 * Get audio from imported sound wave by frame size
-	 * Gets the audio data starting from the current playing time of the sound wave with the size of the AudioFrame equal to the input FrameSize
+	 * Gets the audio data starting from the current playing time of the sound wave with the size of the AudioFrames equal to the input FrameSize
 	 *
 	 * @param ImportedSoundWave Sound wave to extract audio data
 	 * @param FrameSize The frame size of internal buffers for extracting audio data. The smaller the buffer size, the greater the performance, but less accuracy
@@ -83,11 +83,11 @@ public:
 
 	/**
 	 * Get audio from imported sound wave by time length
-	 * Gets the audio data starting from the current playing time of the sound wave with the size of the AudioFrame equal to the input TimeLength
+	 * Gets the audio data starting from the current playing time of the sound wave with the size of the AudioFrames equal to the input TimeLength
 	 *
 	 * @param ImportedSoundWave Sound wave to extract audio data
 	 * @param TimeLength Audio length to extract audio data
-	 * @param AudioFrames An array containing audio frames in 32-bit float PCM format
+	 * @param AudioFrames An array containing audio frame in 32-bit float PCM format
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Advanced")
 	bool GetAudioByTimeLength(UImportedSoundWave* ImportedSoundWave, float TimeLength, TArray<float>& AudioFrames);
@@ -98,7 +98,7 @@ public:
 	 * @param ImportedSoundWave Sound wave to extract audio data
 	 * @param StartTime Start time for extracting audio data
 	 * @param EndTime End time for extracting audio data
-	 * @param AudioFrames An array containing audio frames in 32-bit float PCM format
+	 * @param AudioFrames An array containing audio frame in 32-bit float PCM format
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Advanced")
 	bool GetAudioByTimeRange(UImportedSoundWave* ImportedSoundWave, float StartTime, float EndTime, TArray<float>& AudioFrames);
@@ -107,7 +107,7 @@ public:
 	 * Update the frame size. The smaller the buffer size, the greater the performance, but less accuracy
 	 *
 	 * @param FrameSize The frame size of internal buffers
-	 * @note You do not need to call it manually if you use "ProcessAudioFrameFromSoundWave"
+	 * @note You do not need to call it manually if you use "ProcessAudioFrames"
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Advanced")
 	void UpdateFrameSize(int64 FrameSize);

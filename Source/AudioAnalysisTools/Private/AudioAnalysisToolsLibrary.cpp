@@ -31,9 +31,7 @@ void UAudioAnalysisToolsLibrary::BeginDestroy()
 UAudioAnalysisToolsLibrary* UAudioAnalysisToolsLibrary::CreateAudioAnalysisTools(int64 FrameSize, EAnalysisWindowType WindowType)
 {
 	UAudioAnalysisToolsLibrary* AudioAnalysisTools = NewObject<UAudioAnalysisToolsLibrary>();
-
 	AudioAnalysisTools->Initialize(FrameSize, WindowType);
-
 	return AudioAnalysisTools;
 }
 
@@ -74,8 +72,8 @@ bool UAudioAnalysisToolsLibrary::GetAudioByFrameRange(UImportedSoundWave* Import
 
 	const int32 NumChannels = ImportedSoundWave->NumChannels;
 
-	const float* RetrievedPCMData = ImportedSoundWave->GetPCMBuffer().PCMData.GetView().GetData() + (StartFrame * NumChannels);
-	const int64 RetrievedPCMDataSize = EndFrame - StartFrame;
+	const float* RetrievedPCMData = ImportedSoundWave->GetPCMBuffer().PCMData.GetView().GetData() + StartFrame * NumChannels;
+	const int64 RetrievedPCMDataSize = (EndFrame - StartFrame + 1) * NumChannels;
 
 	if (!RetrievedPCMData)
 	{
@@ -102,7 +100,6 @@ bool UAudioAnalysisToolsLibrary::GetAudioByFrameRange(UImportedSoundWave* Import
 	}
 
 	AudioFrames = TArray<float>(RetrievedPCMData, RetrievedPCMDataSize);
-
 	return true;
 }
 
@@ -159,8 +156,7 @@ bool UAudioAnalysisToolsLibrary::GetAudioByTimeRange(UImportedSoundWave* Importe
 			return false;
 		}
 
-		const float Duration{ImportedSoundWave->GetDurationConst_Internal()};
-
+		const float Duration = ImportedSoundWave->GetDurationConst_Internal();
 		if (EndTime > Duration)
 		{
 			UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to get the PCM Data: end time (%f) must be less than the sound wave duration (%f)"), EndTime, Duration);
@@ -180,7 +176,7 @@ void UAudioAnalysisToolsLibrary::Initialize(int64 FrameSize, EAnalysisWindowType
 {
 	BeatDetection = UBeatDetection::CreateBeatDetection();
 	check(BeatDetection);
-	
+
 	OnsetDetection = UOnsetDetection::CreateOnsetDetection(FrameSize);
 	check(OnsetDetection);
 
@@ -196,7 +192,7 @@ TArray<float> UAudioAnalysisToolsLibrary::GetMagnitudeSpectrum() const
 		UE_LOG(LogAudioAnalysis, Error, TEXT("Failed to get Magnitude Spectrum Real: Array with int32 size (max length: %d) cannot fit int64 size data (retrieved length: %lld)"), TNumericLimits<int32>::Max(), MagnitudeSpectrum.Num());
 		return TArray<float>();
 	}
-	
+
 	return TArray<float>(MagnitudeSpectrum);
 }
 
@@ -212,7 +208,7 @@ TArray<float> UAudioAnalysisToolsLibrary::GetFFTReal() const
 		UE_LOG(LogAudioAnalysis, Error, TEXT("Failed to get FFT Real: Array with int32 size (max length: %d) cannot fit int64 size data (retrieved length: %lld)"), TNumericLimits<int32>::Max(), FFTReal.Num());
 		return TArray<float>();
 	}
-	
+
 	return TArray<float>(FFTReal);
 }
 
@@ -228,7 +224,7 @@ TArray<float> UAudioAnalysisToolsLibrary::GetFFTImaginary() const
 		UE_LOG(LogAudioAnalysis, Error, TEXT("Failed to get FFT Imaginary: Array with int32 size (max length: %d) cannot fit int64 size data (retrieved length: %lld)"), TNumericLimits<int32>::Max(), FFTReal.Num());
 		return TArray<float>();
 	}
-	
+
 	return TArray<float>(FFTImaginary);
 }
 
@@ -237,7 +233,7 @@ const TArray64<float>& UAudioAnalysisToolsLibrary::GetFFTImaginary64() const
 	return FFTImaginary;
 }
 
-void UAudioAnalysisToolsLibrary::ProcessAudioFrame(const TArray<float>& AudioFrames, bool bProcessToBeatDetection)
+void UAudioAnalysisToolsLibrary::ProcessAudioFrames(const TArray<float>& AudioFrames, bool bProcessToBeatDetection)
 {
 	if (AudioFrames.Num() != CurrentAudioFrames.Num())
 	{
