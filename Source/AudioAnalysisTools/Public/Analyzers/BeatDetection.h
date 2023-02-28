@@ -26,17 +26,17 @@ public:
 	 * @return The BeatDetection object
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Beat Detection|Main")
-	static UBeatDetection* CreateBeatDetection(int64 FFTSubbandsSize = 32, int64 EnergyHistorySize = 41);
+	static UBeatDetection* CreateBeatDetection(UPARAM(DisplayName = "FFT Subband Size") int64 FFTSubbandSize = 32, int64 EnergyHistorySize = 41);
 
 public:
 	/**
-	 * Update FFT sub-bands size
+	 * Update FFT sub-band size
 	 *
-	 * @param FFTSubbandsSize FFT sub-bands size
+	 * @param FFTSubbandSize FFT sub-band size
 	 * @note Commonly used 32
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Beat Detection|Update")
-	void UpdateFFTSubbandsSize(int64 FFTSubbandsSize = 32);
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Update FFT Subband Size"), Category = "Beat Detection|Update")
+	void UpdateFFTSubbandSize(UPARAM(DisplayName = "FFT Subband Size") int64 FFTSubbandSize = 32);
 
 	/**
 	 * Update the size of the energy history storage
@@ -141,8 +141,8 @@ private:
 	/** Current position to track energy history */
 	int64 HistoryPosition;
 
-	/** FFT sub-bands size (usually 32) */
-	int64 FFTSubbandsSize;
+	/** FFT sub-band size (usually 32) */
+	int64 FFTSubbandSize;
 
 	/** Energy history storage size */
 	int64 EnergyHistorySize;

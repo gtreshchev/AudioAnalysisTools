@@ -6,7 +6,7 @@
 
 UBeatDetection::UBeatDetection()
 	: HistoryPosition(0),
-	  FFTSubbandsSize(0),
+	  FFTSubbandSize(0),
 	  EnergyHistorySize(0)
 {
 }
@@ -17,29 +17,29 @@ UBeatDetection* UBeatDetection::CreateBeatDetection(int64 InFFTSubbandsSize, int
 	
 	// We'll set this here, so we only resize the energy history arrays once, in the UpdateFFTSubbandsSize function
 	BeatDetection->EnergyHistorySize = InEnergyHistorySize;
-	BeatDetection->UpdateFFTSubbandsSize(InFFTSubbandsSize);
+	BeatDetection->UpdateFFTSubbandSize(InFFTSubbandsSize);
 	return BeatDetection;
 }
 
-void UBeatDetection::UpdateFFTSubbandsSize(int64 InFFTSubbandsSize)
+void UBeatDetection::UpdateFFTSubbandSize(int64 InFFTSubbandSize)
 {
 	// We'll assume nothing, and make sure our user has made a reasonable request
-	if (InFFTSubbandsSize <= 0)
+	if (InFFTSubbandSize <= 0)
 	{
 		// Tell the user that they've tried to use an incorrect value, and where they tried it
-		UE_LOG(LogAudioAnalysis, Log, TEXT("Beat Detection FFT subbands size '%lld' is invalid, value '%lld' remains"), InFFTSubbandsSize, FFTSubbandsSize);
+		UE_LOG(LogAudioAnalysis, Log, TEXT("Beat Detection FFT subbands size '%lld' is invalid. The value '%lld' will remain unchanged."), InFFTSubbandSize, FFTSubbandSize);
 		return;
 	}
 
-	UE_LOG(LogAudioAnalysis, Log, TEXT("Updating Beat Detection FFT subbands size from '%lld' to '%lld'"), FFTSubbandsSize, InFFTSubbandsSize);
+	UE_LOG(LogAudioAnalysis, Log, TEXT("Updating Beat Detection FFT subbands size from '%lld' to '%lld'"), FFTSubbandSize, InFFTSubbandSize);
 	
-	FFTSubbandsSize = InFFTSubbandsSize;
+	FFTSubbandSize = InFFTSubbandSize;
 
-	FFTSubbands.SetNum(FFTSubbandsSize);
-	FFTAverageEnergy.SetNum(FFTSubbandsSize);
-	FFTVariance.SetNum(FFTSubbandsSize);
-	FFTBeatValues.SetNum(FFTSubbandsSize);
-	EnergyHistory.SetNum(FFTSubbandsSize);
+	FFTSubbands.SetNum(FFTSubbandSize);
+	FFTAverageEnergy.SetNum(FFTSubbandSize);
+	FFTVariance.SetNum(FFTSubbandSize);
+	FFTBeatValues.SetNum(FFTSubbandSize);
+	EnergyHistory.SetNum(FFTSubbandSize);
 
 	// We resized the external array, so we have to resize the new array
 	UpdateEnergyHistorySize(EnergyHistorySize);
@@ -59,7 +59,7 @@ void UBeatDetection::UpdateEnergyHistorySize(int64 InEnergyHistorySize)
 	
 	EnergyHistorySize = InEnergyHistorySize;
 
-	for (int64 SubbandIndex = 0; SubbandIndex < FFTSubbandsSize; ++SubbandIndex)
+	for (int64 SubbandIndex = 0; SubbandIndex < FFTSubbandSize; ++SubbandIndex)
 	{
 		EnergyHistory[SubbandIndex].SetNum(EnergyHistorySize);
 	}
@@ -70,30 +70,30 @@ void UBeatDetection::UpdateFFT(const TArray64<float>& MagnitudeSpectrum)
 	const int64 MagnitudeSpectrumSize{MagnitudeSpectrum.Num()};
 
 	// Sub-band calculation
-	for (int64 SubbandIndex = 0; SubbandIndex < FFTSubbandsSize; ++SubbandIndex)
+	for (int64 SubbandIndex = 0; SubbandIndex < FFTSubbandSize; ++SubbandIndex)
 	{
 		FFTSubbands[SubbandIndex] = 0;
 
-		for (int64 SubbandInternalIndex = 0; SubbandInternalIndex < MagnitudeSpectrumSize / FFTSubbandsSize; ++SubbandInternalIndex)
+		for (int64 SubbandInternalIndex = 0; SubbandInternalIndex < MagnitudeSpectrumSize / FFTSubbandSize; ++SubbandInternalIndex)
 		{
-			FFTSubbands[SubbandIndex] += MagnitudeSpectrum[SubbandIndex * (MagnitudeSpectrumSize / FFTSubbandsSize) + SubbandInternalIndex];
+			FFTSubbands[SubbandIndex] += MagnitudeSpectrum[SubbandIndex * (MagnitudeSpectrumSize / FFTSubbandSize) + SubbandInternalIndex];
 		}
 		// After summing the subband values, divide the added number of times to get the average value
-		FFTSubbands[SubbandIndex] *= static_cast<float>(FFTSubbandsSize) / MagnitudeSpectrumSize;
+		FFTSubbands[SubbandIndex] *= static_cast<float>(FFTSubbandSize) / MagnitudeSpectrumSize;
 
 		// Calculation of subband variance value
-		for (int64 SubbandInternalIndex = 0; SubbandInternalIndex < MagnitudeSpectrumSize / FFTSubbandsSize; ++SubbandInternalIndex)
+		for (int64 SubbandInternalIndex = 0; SubbandInternalIndex < MagnitudeSpectrumSize / FFTSubbandSize; ++SubbandInternalIndex)
 		{
-			FFTVariance[SubbandIndex] += FMath::Pow(MagnitudeSpectrum[SubbandIndex * (MagnitudeSpectrumSize / FFTSubbandsSize) + SubbandInternalIndex] - FFTSubbands[SubbandIndex], 2);
+			FFTVariance[SubbandIndex] += FMath::Pow(MagnitudeSpectrum[SubbandIndex * (MagnitudeSpectrumSize / FFTSubbandSize) + SubbandInternalIndex] - FFTSubbands[SubbandIndex], 2);
 		}
-		FFTVariance[SubbandIndex] *= static_cast<float>(FFTSubbandsSize) / MagnitudeSpectrumSize;
+		FFTVariance[SubbandIndex] *= static_cast<float>(FFTSubbandSize) / MagnitudeSpectrumSize;
 
 		// Reduce possible noise with linear digression using some magic numbers
 		FFTBeatValues[SubbandIndex] = (-0.0025714 * FFTVariance[SubbandIndex]) + 1.15142857;
 	}
 
 	// Calculation of energy average
-	for (int64 SubbandIndex = 0; SubbandIndex < FFTSubbandsSize; ++SubbandIndex)
+	for (int64 SubbandIndex = 0; SubbandIndex < FFTSubbandSize; ++SubbandIndex)
 	{
 		FFTAverageEnergy[SubbandIndex] = 0;
 		for (int64 EnergyHistoryIndex = 0; EnergyHistoryIndex < EnergyHistorySize; ++EnergyHistoryIndex)
@@ -107,7 +107,7 @@ void UBeatDetection::UpdateFFT(const TArray64<float>& MagnitudeSpectrum)
 	}
 
 	// Put new values into the energy history
-	for (int64 SubbandIndex = 0; SubbandIndex < FFTSubbandsSize; ++SubbandIndex)
+	for (int64 SubbandIndex = 0; SubbandIndex < FFTSubbandSize; ++SubbandIndex)
 	{
 		// Add the calculated subband to the HistoryPosition in the energy history
 		EnergyHistory[SubbandIndex][HistoryPosition] = FFTSubbands[SubbandIndex];
@@ -130,9 +130,9 @@ void UBeatDetection::ProcessMagnitude(const TArray64<float>& MagnitudeSpectrum)
 bool UBeatDetection::IsBeat(int64 SubBand) const
 {
 	// Prevent out of array exception
-	if (SubBand >= FFTSubbandsSize)
+	if (SubBand >= FFTSubbandSize)
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot check if beat: sub band ('%lld') must not be greater than sub bands size ('%lld')"), SubBand, FFTSubbandsSize);
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot detect a beat: FFT sub-band ('%lld') must not exceed the sub-band size ('%lld')"), SubBand, FFTSubbandSize);
 		return false;
 	}
 	return FFTSubbands[SubBand] > FFTAverageEnergy[SubBand] * FFTBeatValues[SubBand];
@@ -146,7 +146,7 @@ bool UBeatDetection::IsKick() const
 bool UBeatDetection::IsSnare() const
 {
 	constexpr int64 Low = 1;
-	const int64 High = FFTSubbandsSize / 3;
+	const int64 High = FFTSubbandSize / 3;
 	const int64 Threshold = (High - Low) / 3;
 
 	return IsBeatRange(Low, High, Threshold);
@@ -154,8 +154,8 @@ bool UBeatDetection::IsSnare() const
 
 bool UBeatDetection::IsHiHat() const
 {
-	const int64 Low = FFTSubbandsSize / 2;
-	const int64 High = FFTSubbandsSize - 1;
+	const int64 Low = FFTSubbandSize / 2;
+	const int64 High = FFTSubbandSize - 1;
 	const int64 Threshold = (High - Low) / 3;
 
 	return IsBeatRange(Low, High, Threshold);
@@ -163,21 +163,21 @@ bool UBeatDetection::IsHiHat() const
 
 bool UBeatDetection::IsBeatRange(int64 Low, int64 High, int64 Threshold) const
 {
-	if (!(Low >= 0 && Low < FFTSubbandsSize))
+	if (!(Low >= 0 && Low < FFTSubbandSize))
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot check if beat is in range: low subband is '%lld', expected >= '0' and < '%lld'"), Low, FFTSubbandsSize);
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot detect if the beat is in range: the low sub-band is '%lld', expected to be >= '0' and < '%lld'"), Low, FFTSubbandSize);
 		return false;
 	}
 
-	if (!(High >= 0 && High < FFTSubbandsSize))
+	if (!(High >= 0 && High < FFTSubbandSize))
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot check if beat is in range: high subband is '%lld', expected >= '0', < '%lld'"), High, FFTSubbandsSize);
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot detect if the beat is in range: the high sub-band is '%lld', expected to be >= '0', < '%lld'"), High, FFTSubbandSize);
 		return false;
 	}
 
 	if (!(High > Low))
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot check if beat is in range: high subband ('%lld') must be more than low subband ('%lld')"), High, Low);
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot detect if the beat is in range: the high sub-band ('%lld') must be greater than the low sub-band ('%lld')"), High, Low);
 		return false;
 	}
 
@@ -196,9 +196,9 @@ bool UBeatDetection::IsBeatRange(int64 Low, int64 High, int64 Threshold) const
 
 float UBeatDetection::GetBand(int64 Subband) const
 {
-	if (!(Subband > 0 && Subband < FFTSubbandsSize))
+	if (!(Subband > 0 && Subband < FFTSubbandSize))
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot get FFT subband: specified subband is '%lld', expected > '0' and < '%lld'"), Subband, FFTSubbandsSize);
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot obtain FFT sub-band: the specified sub-band is '%lld', but it is expected to be > '0' and < '%lld'"), Subband, FFTSubbandSize);
 		return -1;
 	}
 	return FFTSubbands[Subband];
