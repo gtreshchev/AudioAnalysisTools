@@ -12,6 +12,7 @@
 
 #include "Async/Async.h"
 #include "UObject/GCObjectScopeGuard.h"
+#include "Misc/ScopeLock.h"
 
 UAudioAnalysisToolsLibrary::UAudioAnalysisToolsLibrary()
 	: FFTConfigured(false)
@@ -233,18 +234,19 @@ const TArray64<float>& UAudioAnalysisToolsLibrary::GetFFTImaginary64() const
 	return FFTImaginary;
 }
 
-void UAudioAnalysisToolsLibrary::ProcessAudioFrames(const TArray<float>& AudioFrames, bool bProcessToBeatDetection)
+void UAudioAnalysisToolsLibrary::ProcessAudioFrames(TArray<float> AudioFrames, bool bProcessToBeatDetection)
 {
-	if (AudioFrames.Num() != CurrentAudioFrames.Num())
-	{
-		UpdateFrameSize(AudioFrames.Num());
-	}
-
-	CurrentAudioFrames = AudioFrames;
-
-	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [this, bProcessToBeatDetection]()
+	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [this, AudioFrames = MoveTemp(AudioFrames), bProcessToBeatDetection]() mutable 
 	{
 		FGCObjectScopeGuard Guard(this);
+		FScopeLock Lock(&DataGuard);
+
+		if (AudioFrames.Num() != CurrentAudioFrames.Num())
+		{
+			UpdateFrameSize(AudioFrames.Num());
+		}
+		CurrentAudioFrames = MoveTemp(AudioFrames);
+
 		PerformFFT();
 
 		if (bProcessToBeatDetection)

@@ -47,7 +47,7 @@ public:
 	 * @param bProcessToBeatDetection Whether to process audio frame to beat detection or not
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Main")
-	void ProcessAudioFrames(const TArray<float>& AudioFrames, bool bProcessToBeatDetection = true);
+	void ProcessAudioFrames(TArray<float> AudioFrames, bool bProcessToBeatDetection = true);
 
 	/**
 	 * Get audio from imported sound wave by current playback time
@@ -361,6 +361,9 @@ private:
 
 	/** The magnitude spectrum of the current audio frame */
 	TArray64<float> MagnitudeSpectrum;
+
+	/** Data guard (mutex) for thread safety */
+	mutable FCriticalSection DataGuard;
 
 public:
 	/** Reference to the Beat Detection */
