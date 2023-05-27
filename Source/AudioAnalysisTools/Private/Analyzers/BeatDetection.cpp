@@ -196,9 +196,9 @@ bool UBeatDetection::IsBeatRange(int64 Low, int64 High, int64 Threshold) const
 
 float UBeatDetection::GetBand(int64 Subband) const
 {
-	if (!(Subband > 0 && Subband < FFTSubbandSize))
+	if (!(Subband >= 0 && Subband < FFTSubbandSize))
 	{
-		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot obtain FFT sub-band: the specified sub-band is '%lld', but it is expected to be > '0' and < '%lld'"), Subband, FFTSubbandSize);
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Cannot obtain FFT sub-band: the specified sub-band is '%lld', but it is expected to be >= '0' and < '%lld'"), Subband, FFTSubbandSize);
 		return -1;
 	}
 	return FFTSubbands[Subband];
