@@ -4,7 +4,7 @@
 
 #include "AudioAnalysisToolsDefines.h"
 #include "Math/UnrealMathUtility.h"
-#include "Launch/Resources/Version.h"
+#include "Misc/EngineVersionComparison.h"
 
 #include "Async/ParallelFor.h"
 
@@ -342,7 +342,7 @@ void CalculateFactors(int64 Number, int64* Factors)
 {
 	int64 Primes = 4;
 
-#if ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION <= 26
+#if UE_VERSION_OLDER_THAN(4, 26, 0)
 auto ProcessFloor = [](double Value){ return floor(Value); };
 #else
 auto ProcessFloor = [](double Value){ return FMath::Floor(Value); };
