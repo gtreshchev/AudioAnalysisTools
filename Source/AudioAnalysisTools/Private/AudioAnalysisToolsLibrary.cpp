@@ -11,7 +11,6 @@
 #include "Analyzers/FFTAnalyzer.h"
 
 #include "Async/Async.h"
-#include "UObject/GCObjectScopeGuard.h"
 #include "Misc/ScopeLock.h"
 
 UAudioAnalysisToolsLibrary::UAudioAnalysisToolsLibrary()
@@ -236,24 +235,36 @@ const TArray64<float>& UAudioAnalysisToolsLibrary::GetFFTImaginary64() const
 
 void UAudioAnalysisToolsLibrary::ProcessAudioFrames(TArray<float> AudioFrames, bool bProcessToBeatDetection)
 {
-	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [this, AudioFrames = MoveTemp(AudioFrames), bProcessToBeatDetection]() mutable 
+	if (IsInGameThread())
 	{
-		FGCObjectScopeGuard Guard(this);
-		FScopeLock Lock(&DataGuard);
-
-		if (AudioFrames.Num() != CurrentAudioFrames.Num())
+		AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [WeakThis = MakeWeakObjectPtr(this), AudioFrames = MoveTemp(AudioFrames), bProcessToBeatDetection]() mutable 
 		{
-			UpdateFrameSize(AudioFrames.Num());
-		}
-		CurrentAudioFrames = MoveTemp(AudioFrames);
+			if (WeakThis.IsValid())
+			{
+				WeakThis->ProcessAudioFrames(MoveTemp(AudioFrames), bProcessToBeatDetection);
+			}
+			else
+			{
+				UE_LOG(LogAudioAnalysis, Error, TEXT("Failed to process audio frames because the AudioAnalysisToolsLibrary has been destroyed"));
+			}
+		});
+		return;
+	}
 
-		PerformFFT();
+	FScopeLock Lock(&DataGuard);
 
-		if (bProcessToBeatDetection)
-		{
-			BeatDetection->ProcessMagnitude(MagnitudeSpectrum);
-		}
-	});
+	if (AudioFrames.Num() != CurrentAudioFrames.Num())
+	{
+		UpdateFrameSize(AudioFrames.Num());
+	}
+	CurrentAudioFrames = MoveTemp(AudioFrames);
+
+	PerformFFT();
+
+	if (bProcessToBeatDetection)
+	{
+		BeatDetection->ProcessMagnitude(MagnitudeSpectrum);
+	}
 }
 
 void UAudioAnalysisToolsLibrary::UpdateFrameSize(int64 FrameSize)
