@@ -273,7 +273,7 @@ void UAudioAnalysisToolsLibrary::UpdateFrameSize(int64 FrameSize)
 
 	CurrentAudioFrames.SetNum(FrameSize);
 
-	WindowFunction = UWindowsLibrary::CreateWindow(FrameSize, WindowType);
+	WindowFunction = UWindowsLibrary::CreateWindowByType(FrameSize, WindowType);
 
 	FFTReal.SetNum(FrameSize);
 	FFTImaginary.SetNum(FrameSize);

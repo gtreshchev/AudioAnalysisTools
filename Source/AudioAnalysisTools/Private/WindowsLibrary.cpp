@@ -2,12 +2,12 @@
 
 #include "WindowsLibrary.h"
 
-TArray<float> UWindowsLibrary::CreateWindow(int32 FrameSize, EAnalysisWindowType WindowType)
+TArray<float> UWindowsLibrary::CreateWindowByType(int32 FrameSize, EAnalysisWindowType WindowType)
 {
-	return TArray<float>(CreateWindow(static_cast<int64>(FrameSize), WindowType));
+	return TArray<float>(CreateWindowByType(static_cast<int64>(FrameSize), WindowType));
 }
 
-TArray64<float> UWindowsLibrary::CreateWindow(int64 FrameSize, EAnalysisWindowType WindowType)
+TArray64<float> UWindowsLibrary::CreateWindowByType(int64 FrameSize, EAnalysisWindowType WindowType)
 {
 	switch (WindowType)
 	{

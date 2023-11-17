@@ -37,7 +37,7 @@ public:
 	 * @return A window with the specified type
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Window Library")
-	static TArray<float> CreateWindow(int32 FrameSize, EAnalysisWindowType WindowType);
+	static TArray<float> CreateWindowByType(int32 FrameSize, EAnalysisWindowType WindowType);
 
 	/**
 	 * Create a window with a specified type. It is used in spectral analysis
@@ -47,7 +47,7 @@ public:
 	 * @param WindowType A type of the window
 	 * @return A window with the specified type
 	 */
-	static TArray64<float> CreateWindow(int64 FrameSize, EAnalysisWindowType WindowType);
+	static TArray64<float> CreateWindowByType(int64 FrameSize, EAnalysisWindowType WindowType);
 
 	/**
 	 * Create a window with Hanning type. It is used in spectral analysis
