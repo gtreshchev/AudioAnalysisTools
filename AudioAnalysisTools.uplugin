@@ -19,7 +19,7 @@
     {
       "Name": "AudioAnalysisTools",
       "Type": "Runtime",
-      "LoadingPhase": "Default"
+      "LoadingPhase": "PreDefault"
     }
   ],
   "Plugins": [
