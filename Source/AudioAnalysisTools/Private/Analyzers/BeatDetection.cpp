@@ -3,6 +3,7 @@
 #include "Analyzers/BeatDetection.h"
 #include "AudioAnalysisToolsDefines.h"
 #include "Math/UnrealMathUtility.h"
+#include "Math/NumericLimits.h"
 
 UBeatDetection::UBeatDetection()
 	: HistoryPosition(0),
@@ -202,4 +203,44 @@ float UBeatDetection::GetBand(int64 Subband) const
 		return -1;
 	}
 	return FFTSubbands[Subband];
+}
+
+TArray<float> UBeatDetection::GetFFTSubbands_BP() const
+{
+	if (FFTSubbands.Num() > TNumericLimits<int32>::Max())
+	{
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to obtain FFT sub-bands: array with int32 size (max length: %d) cannot fit int64 size data (retrieved length: %lld)\nA standard byte array can hold a maximum of 2 GB of data"), TNumericLimits<int32>::Max(), FFTSubbands.Num());
+		return TArray<float>();
+	}
+	return TArray<float>(FFTSubbands);
+}
+
+TArray<float> UBeatDetection::GetFFTAverageEnergy_BP() const
+{
+	if (FFTAverageEnergy.Num() > TNumericLimits<int32>::Max())
+	{
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to obtain FFT average energy: array with int32 size (max length: %d) cannot fit int64 size data (retrieved length: %lld)\nA standard byte array can hold a maximum of 2 GB of data"), TNumericLimits<int32>::Max(), FFTAverageEnergy.Num());
+		return TArray<float>();
+	}
+	return TArray<float>(FFTAverageEnergy);
+}
+
+TArray<float> UBeatDetection::GetFFTVariance_BP() const
+{
+	if (FFTVariance.Num() > TNumericLimits<int32>::Max())
+	{
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to obtain FFT variance: array with int32 size (max length: %d) cannot fit int64 size data (retrieved length: %lld)\nA standard byte array can hold a maximum of 2 GB of data"), TNumericLimits<int32>::Max(), FFTVariance.Num());
+		return TArray<float>();
+	}
+	return TArray<float>(FFTVariance);
+}
+
+TArray<float> UBeatDetection::GetFFTBeatValues_BP() const
+{
+	if (FFTBeatValues.Num() > TNumericLimits<int32>::Max())
+	{
+		UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to obtain FFT beat values: array with int32 size (max length: %d) cannot fit int64 size data (retrieved length: %lld)\nA standard byte array can hold a maximum of 2 GB of data"), TNumericLimits<int32>::Max(), FFTBeatValues.Num());
+		return TArray<float>();
+	}
+	return TArray<float>(FFTBeatValues);
 }

@@ -68,7 +68,7 @@ public:
 	 * @param AudioFrames An array containing audio frames in 32-bit float PCM format
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Advanced")
-	bool GetAudioByFrameSize(UImportedSoundWave* ImportedSoundWave, int64 FrameSize, TArray<float>& AudioFrames);
+	static bool GetAudioByFrameSize(UImportedSoundWave* ImportedSoundWave, int64 FrameSize, TArray<float>& AudioFrames);
 
 	/**
 	 * Get audio from imported sound wave by frame range (from StartFrame to EndFrame frames)
@@ -79,7 +79,7 @@ public:
 	 * @param AudioFrames An array containing audio frames in 32-bit float PCM format
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Advanced")
-	bool GetAudioByFrameRange(UImportedSoundWave* ImportedSoundWave, int64 StartFrame, int64 EndFrame, TArray<float>& AudioFrames);
+	static bool GetAudioByFrameRange(UImportedSoundWave* ImportedSoundWave, int64 StartFrame, int64 EndFrame, TArray<float>& AudioFrames);
 
 	/**
 	 * Get audio from imported sound wave by time length
@@ -90,7 +90,7 @@ public:
 	 * @param AudioFrames An array containing audio frame in 32-bit float PCM format
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Advanced")
-	bool GetAudioByTimeLength(UImportedSoundWave* ImportedSoundWave, float TimeLength, TArray<float>& AudioFrames);
+	static bool GetAudioByTimeLength(UImportedSoundWave* ImportedSoundWave, float TimeLength, TArray<float>& AudioFrames);
 
 	/**
 	 * Get audio from imported sound wave by time range (from StartTime to EndTime times)
@@ -101,7 +101,7 @@ public:
 	 * @param AudioFrames An array containing audio frame in 32-bit float PCM format
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Audio Analysis Tools|Advanced")
-	bool GetAudioByTimeRange(UImportedSoundWave* ImportedSoundWave, float StartTime, float EndTime, TArray<float>& AudioFrames);
+	static bool GetAudioByTimeRange(UImportedSoundWave* ImportedSoundWave, float StartTime, float EndTime, TArray<float>& AudioFrames);
 
 	/**
 	 * Update the frame size. The smaller the buffer size, the greater the performance, but less accuracy

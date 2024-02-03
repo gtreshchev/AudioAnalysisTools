@@ -62,7 +62,7 @@ bool UAudioAnalysisToolsLibrary::GetAudioByFrameRange(UImportedSoundWave* Import
 		return false;
 	}
 
-	FScopeLock Lock(&ImportedSoundWave->DataGuard);
+	FScopeLock Lock(&*ImportedSoundWave->DataGuard);
 
 	if (EndFrame > ImportedSoundWave->GetPCMBuffer().PCMNumOfFrames)
 	{
@@ -121,7 +121,7 @@ bool UAudioAnalysisToolsLibrary::GetAudioByTimeRange(UImportedSoundWave* Importe
 
 	int64 StartFrame, EndFrame;
 	{
-		FScopeLock Lock(&ImportedSoundWave->DataGuard);
+		FScopeLock Lock(&*ImportedSoundWave->DataGuard);
 
 		if (!ImportedSoundWave->GetPCMBuffer().IsValid())
 		{

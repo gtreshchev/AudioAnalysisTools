@@ -115,7 +115,59 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Beat Detection|Main")
 	float GetBand(int64 Subband) const;
 
-private:
+	/**
+	 * Get FFT Sub-bands values
+	 * @return FFT Sub-bands values
+	 */
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get FFT Subbands"), Category = "Beat Detection|Main")
+	TArray<float> GetFFTSubbands_BP() const;
+
+	/**
+	 * Get FFT Sub-bands values. Suitable for use with 64-bit data size
+	 * @return FFT Sub-bands values
+	 */
+	const TArray64<float>& GetFFTSubbands() const { return FFTSubbands; }
+
+	/**
+	 * Get FFT Average Energy values
+	 * @return FFT Average Energy values
+	 */
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get FFT Average Energy"), Category = "Beat Detection|Main")
+	TArray<float> GetFFTAverageEnergy_BP() const;
+
+	/**
+	 * Get FFT Average Energy values. Suitable for use with 64-bit data size
+	 * @return FFT Average Energy values
+	 */
+	const TArray64<float>& GetFFTAverageEnergy() const { return FFTAverageEnergy; }
+
+	/**
+	 * Get FFT Variance values
+	 * @return FFT Variance values
+	 */
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get FFT Variance"), Category = "Beat Detection|Main")
+	TArray<float> GetFFTVariance_BP() const;
+
+	/**
+	 * Get FFT Variance values. Suitable for use with 64-bit data size
+	 * @return FFT Variance values
+	 */
+	const TArray64<float>& GetFFTVariance() const { return FFTVariance; }
+
+	/**
+	 * Get FFT Beat values
+	 * @return FFT Beat values
+	 */
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get FFT Beat Values"), Category = "Beat Detection|Main")
+	TArray<float> GetFFTBeatValues_BP() const;
+
+	/**
+	 * Get FFT Beat values. Suitable for use with 64-bit data size
+	 * @return FFT Beat values
+	 */
+	const TArray64<float>& GetFFTBeatValues() const { return FFTBeatValues; }
+
+protected:
 	/**
 	 * Update FFT data (sub-bands, average energy, etc.)
 	 * 
