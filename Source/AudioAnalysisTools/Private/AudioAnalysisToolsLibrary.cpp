@@ -141,9 +141,6 @@ bool UAudioAnalysisToolsLibrary::GetAudioByTimeRange(UImportedSoundWave* Importe
 			return false;
 		}
 
-		StartTime -= ImportedSoundWave->GetDurationOffset_Internal();
-		EndTime -= ImportedSoundWave->GetDurationOffset_Internal();
-
 		if (!(StartTime >= 0 && StartTime < EndTime))
 		{
 			UE_LOG(LogAudioAnalysis, Error, TEXT("Unable to get the frame data: start time is '%f', expected >= '0.0' and < '%f'"), StartTime, EndTime);
