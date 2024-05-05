@@ -8,7 +8,7 @@
 #include "Analyzers/BeatDetection.h"
 #include "Analyzers/OnsetDetection.h"
 
-#include "Analyzers/FFTAnalyzer.h"
+#include "Analyzers/FFTAudioAnalyzer.h"
 
 #include "Async/Async.h"
 #include "Misc/ScopeLock.h"
@@ -396,7 +396,7 @@ void UAudioAnalysisToolsLibrary::ConfigureFFT()
 
 	FFT_InSamples = new FFTComplexSamples[FrameSize];
 	FFT_OutSamples = new FFTComplexSamples[FrameSize];
-	FFT_Configuration = UFFTAnalyzer::PerformFFTAlloc(FrameSize, 0, nullptr, nullptr);
+	FFT_Configuration = UFFTAudioAnalyzer::PerformFFTAlloc(FrameSize, 0, nullptr, nullptr);
 
 	FFTConfigured = true;
 }
@@ -431,7 +431,7 @@ void UAudioAnalysisToolsLibrary::PerformFFT()
 	}
 
 	// Execute kiss fft
-	UFFTAnalyzer::PerformFFT(FFT_Configuration, FFT_InSamples, FFT_OutSamples);
+	UFFTAudioAnalyzer::PerformFFT(FFT_Configuration, FFT_InSamples, FFT_OutSamples);
 
 	// Store real and imaginary parts of FFT
 	for (int64 Index = 0; Index < FrameSize; ++Index)
