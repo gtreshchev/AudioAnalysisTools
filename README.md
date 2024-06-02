@@ -30,8 +30,8 @@
 - Onset Detection
 - Core Time Domain Features
 - Core Frequency Domain Features
-- No any static libraries and external dependencies
-- Support for all available devices (Android, iOS, Windows, Mac, Linux, etc)
+- No static libraries and external dependencies
+- Cross-platform compatibility (Windows, Mac, Linux, Android, iOS, etc)
 
 ## Legal info
 
