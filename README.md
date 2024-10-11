@@ -14,7 +14,7 @@
     Real-time audio data analysis<br>Works in conjunction with the <a href="https://github.com/gtreshchev/RuntimeAudioImporter">Runtime Audio Importer</a> plugin
     <br/>
     <br/>
-    <a href="https://github.com/gtreshchev/AudioAnalysisTools/wiki/"><strong>Explore the docs »</strong></a>
+    <a href="https://docs.georgy.dev/audio-analysis-tools/overview"><strong>Explore the docs »</strong></a>
     <br/>
     <br/>
     <a href="https://unrealengine.com/marketplace/product/audio-analysis-tools">Marketplace</a>
