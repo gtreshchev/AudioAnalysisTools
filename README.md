@@ -16,11 +16,8 @@
     <br/>
     <a href="https://docs.georgy.dev/audio-analysis-tools/overview"><strong>Explore the docs »</strong></a>
     <br/>
-    <br/>
-    <a href="https://unrealengine.com/marketplace/product/audio-analysis-tools">Marketplace</a>
+    <a href="https://www.fab.com/listings/8633368b-b19b-48e8-8d9d-40fddf5c7647">Fab</a>
     .
-    <a href="https://github.com/gtreshchev/AudioAnalysisTools/releases">Releases</a>
-    <br/>
     <a href="https://georgy.dev/discord">Discord support chat</a>
   </p>
 
