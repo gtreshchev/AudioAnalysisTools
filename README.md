@@ -1,35 +1,4 @@
-<a href="https://github.com/gtreshchev/AudioAnalysisTools/blob/main/LICENSE">![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)</a>
-<a href="https://georgy.dev/discord">![Discord](https://img.shields.io/discord/1055168498919284786.svg?label=Discord&logo=discord&color=7289DA&labelColor=2C2F33)</a>
-<a href="https://www.unrealengine.com/">![Unreal Engine](https://img.shields.io/badge/Unreal-4.26%2B-dea309)</a>
+**Important Notice:**  
+This open-source version of the plugin is no longer maintained. It may contain bugs and lack some features. I recommend using the **Fab version** for the most up-to-date features, bug fixes, and ongoing support. The Fab version is available [here](https://www.fab.com/listings/8633368b-b19b-48e8-8d9d-40fddf5c7647).
 
-<br/>
-<p align="center">
-  <a href="https://github.com/gtreshchev/AudioAnalysisTools">
-    <img src="Resources/Icon128.png" alt="Logo" width="80" height="80">
-  </a>
-
-<h3 align="center">Audio Analysis Tools</h3>
-
-  <p align="center">
-    Real-time audio data analysis<br>Works in conjunction with the <a href="https://github.com/gtreshchev/RuntimeAudioImporter">Runtime Audio Importer</a> plugin
-    <br/>
-    <br/>
-    <a href="https://docs.georgy.dev/audio-analysis-tools/overview"><strong>Explore the docs »</strong></a>
-    <br/>
-    <a href="https://www.fab.com/listings/8633368b-b19b-48e8-8d9d-40fddf5c7647">Fab</a>
-    .
-    <a href="https://georgy.dev/discord">Discord support chat</a>
-  </p>
-
-## Features
-
-- Beat Detection
-- Onset Detection
-- Core Time Domain Features
-- Core Frequency Domain Features
-- No static libraries and external dependencies
-- Cross-platform compatibility (Windows, Mac, Linux, Android, iOS, etc)
-
-## Like my work?
-
-Consider [supporting me](https://ko-fi.com/georgydev). Hire me at [gtreshchev@gmail.com](mailto:gtreshchev@gmail.com).
+For support or questions, feel free to join the [Discord chat](https://georgy.dev/discord).
